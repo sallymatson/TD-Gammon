@@ -277,6 +277,48 @@ board_update <- function(selected_points) {
       }
     }
     # 25=white bar, 26=white off, 27=black off, 28=black bar
+    # -----   BAR  -------
+    count.grey = 0
+    for ( b in 1:3){
+      if (count.grey < board[25]){
+        points(x = 15+(2.5*b), y = 3.75, pch = 19, cex = 3, col = "grey")
+        count.grey = count.grey + 1
+      }
+      else{
+        points(x = 15+(2.5*b), y = 3.75, pch = 1, cex = 3, col = "grey")
+      }
+    }
+    for ( b in 4:6){
+      if (count.grey < board[25]){
+        points(x = 7.5+(2.5*b), y = 4.25, pch = 19, cex = 3, col = "grey")
+        count.grey = count.grey + 1
+      }
+      else{
+        points(x = 7.5+(2.5*b), y = 4.25, pch = 1, cex = 3, col = "grey")
+      }
+    }
+    # **********   BLACK   **********
+    count.black = 0
+    for ( b in 1:3){
+      if (count.black < board[25]){
+        points(x = 25+(2.5*b), y = 3.75, pch = 19, cex = 3, col = "black")
+        count.black = count.black + 1
+      }
+      else{
+        points(x = 25+(2.5*b), y = 3.75, pch = 1, cex = 3, col = "black")
+      }
+    }
+    for ( b in 4:6){
+      if (count.black < board[25]){
+        points(x = 17.5 +(2.5*b), y = 4.25, pch = 19, cex = 3, col = "black")
+        count.black = count.black + 1
+      }
+      else{
+        points(x = 17.5 +(2.5*b), y = 4.25, pch = 1, cex = 3, col = "black")
+      }
+    }
+    # 25=white bar, 26=white off, 27=black off, 28=black bar
+    # ------  OFF ----------
     count.grey = 0
     for ( b in 1:15){
       if (count.grey < board[26]){
@@ -330,5 +372,19 @@ board_update <- function(selected_points) {
     lines(x = (21:25)+24, y = yT, col = "red", lwd = 4)
     
     
+    # Making a box in the middle of the board
+    # Horizontal line
+    lines(x = seq(15,35,by=1), y = rep(3.5, times = 21), col = "black", lwd = 2, lty=2)  
+    lines(x = seq(15,35,by=1), y = rep(4.5, times = 21), col = "black", lwd = 2, lty=2)  
+    
+    # Verticle line
+    lines(x = rep(15, times = 2), y = seq(3.5, 4.5, by = 1), col = "black", lwd = 2, lty=2)  
+    lines(x = rep(35, times = 2), y = seq(3.5, 4.5, by = 1), col = "black", lwd = 2, lty=2)       
+    
  }
+ 
+ 
+ 
+ 
+ 
  
