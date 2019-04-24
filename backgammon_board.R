@@ -1,6 +1,3 @@
-
-
-
 if(FALSE){
   library(rstudioapi)
   here=dirname(getActiveDocumentContext()$path)
@@ -77,23 +74,10 @@ white.points=function(board){
 #possible.moves=NULL   # keep globally so not repeatedly copied
 #game.history=NULL
 verbose=FALSE
+training=FALSE
 #------------------
 
-# this code is no longer used
-#append.board=function(new.board){
-#  for(i in seq_along(possible.moves)){
-#    if(all(new.board==possible.moves[[i]])) {
-#print("duplicate board")
-#      return(FALSE)
-#    }
-#  }
-#  possible.moves[[length(possible.moves)+1]] <<- new.board
-#  return(TRUE)
-#}
-
-
-
-play.game=function(verbose){
+play.game=function(p1, p2, verbose){
   history=list()
   turns=0
   roll.dice=roll.dice.cl()
@@ -108,45 +92,25 @@ play.game=function(verbose){
     if(verbose)print(paste("player=",player))
     if(verbose)print(paste("roll=",paste(roll,collapse=",")))
     if(verbose)print.board(board)
-    moves=find.all.possible.moves(board,roll)
-    #print(str(moves))
-    if(!all(sapply(moves,is.vector))) stop
-    if(verbose)print(paste("found",length(moves),"possible moves"))
-    #if(length(moves)>0) for(i in seq_along(moves)) print.board(moves[[i]])
-    #if(length(moves)>40)stop()
-    if(FALSE){
-      possible.moves <<- list()
-      for(i in seq_along(moves)){
-        append.board(moves[[i]])
-      }
-    }
-    possible.moves <<- unique(moves)
-    n=length(possible.moves)
-    if(verbose)print(paste("found",n,"unique possible moves"))
+    
     old.board=board
-    i=0
-    if(n>0){
-      i=sample(n,1)
-      board=possible.moves[[i]]
-      #if(verbose)print.board(board)
-    }else{
-      if(verbose)print(paste(player,"unable to play"))
+    if (player == 1){
+      board = p1$move(board, roll)
+    } else if (player == -1){
+      board = p2$move(board, roll)
     }
     play=describe.move(roll,old.board,board)
     history[[length(history)+1]]=list(player=player,roll=roll,play=play,board=old.board)
-    #print(is.list(board))
-    #print(str(board))
-    #print(length(board))
-    #print(board)
     if(verbose)print.board(board)
     if(!check.board(board)!=0)stop("bad board")
   }
   if(player==-1)board=flip.board(board)
   history[[length(history)+1]]=list(player=player,roll=NA,board=board)
-  #print(paste("gave.over=",player,game.over(board)))
-  #print.board(board)
+  print(paste("gave.over=",player,game.over(board)))
+  print.board(board)
   list(player=player,turns=turns,history=history)
 }
+
 # returns a list of board configurations that can result from a roll
 # note that the order of the dice can make a difference, so both orders are used
 # assumes roll has 2 different integers or 4 identical integers

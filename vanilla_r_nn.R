@@ -1,45 +1,11 @@
-init.wgts=function(n.in,n.hid,n.out){
-  b1 = runif(n.hid,-.1,.1)
-  w1 = matrix(rnorm(n.in*n.hid,0,.1),nrow=n.hid,ncol=n.in)
-  b2 = runif(n.out,-.1,.1)
-  w2 = matrix(rnorm(n.out*n.hid,0,.1),nrow=n.out,ncol=n.hid)
-  list(b1=b1,w1=w1,b2=b2,w2=w2)
-}
+source("nn-utils.R")
+source("backgammon_board.R")
 
-init.zeros=function(n.in,n.hid,n.out){
-  b1 = rep(0, n.hid)
-  w1 = matrix(0, nrow=n.hid,ncol=n.in)
-  b2 = rep(0, n.out)
-  w2 = matrix(0, nrow=n.out,ncol=n.hid)
-  list(b1=b1,w1=w1,b2=b2,w2=w2)
-}
-
-
-stable.softmax=function(a){
-  a=a-max(a)
-  ea=exp(a)
-  return(t(t(ea)/colSums(ea)))
-}
-
-sigmoid=function(x){
-  return(1 / (1 + exp(-x)))
-}
-dsigmoid=function(x){
-  return (sigmoid(x)*(1-sigmoid(x)))
-}
-
-relu=function(x){
-  for (i in 1:length(x)){
-    x[i] = max(0,x[i])
-  }
-  return(x)
-}
-drelu=function(x){
-  return(1*(x>=0))
-}
-
-fwd.prop=function(x,b1,w1,b2,w2,f,g){
-  z1 = b1+w1%*%x
+fwd.prop=function(board,vanilla_agent){
+  # forward propegates current game state and returns 
+  # each layer's activation. 
+  # a2 is the network's output (aka percetentage chance for winning given board)
+  z1 = b1+w1%*%board
   a1 = f(z1)
   z2 = b2+w2%*%a1
   a2 = g(z2)
@@ -47,6 +13,7 @@ fwd.prop=function(x,b1,w1,b2,w2,f,g){
 }
 
 bk.prop=function(x,y,w2,fprop,df){
+  # finds gradients of each layer & variable
   m = ncol(y)
   yhat = fprop$a2
   a1 = fprop$a1
@@ -61,6 +28,37 @@ bk.prop=function(x,y,w2,fprop,df){
   dw1 = (dc1 %*% t(x))/m
   return(list(db1=db1,db2=db2,dw1=dw1,dw2=dw2))
 }
+
+train.game=function(agent, verbose){
+  turns=0
+  roll.dice=roll.dice.cl()
+  board=flip.board(init.board())
+  player=-1
+  while(game.over(board)==0){
+    # NEW TURN
+    board=flip.board(board)
+    turns=turns+1
+    player=-player
+    roll=roll.dice()
+    
+    if(verbose)print(paste("player=",player))
+    if(verbose)print(paste("roll=",paste(roll,collapse=",")))
+    if(verbose)print.board(board)
+    
+    old.board=board
+    board = agent$move(board, roll)
+    play=describe.move(roll,old.board,board)
+    history[[length(history)+1]]=list(player=player,roll=roll,play=play,board=old.board)
+    if(verbose)print.board(board)
+    if(!check.board(board)!=0)stop("bad board")
+  }
+  if(player==-1)board=flip.board(board)
+  history[[length(history)+1]]=list(player=player,roll=NA,board=board)
+  print(paste("gave.over=",player,game.over(board)))
+  print.board(board)
+  list(player=player,turns=turns,history=history)
+}
+
 
 nnet1.fit=function(x,y,model,f,g,df,cost,ALPHA,max.games,LAMBDA,n.hid){
   
