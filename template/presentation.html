@@ -22,403 +22,246 @@ class: center, middle, inverse, title-slide
 
 
 
+
+
+
 # TD Gammon 
 
-## Sally todo
-TD Gammon is a an algorithm that plays backgammon at a near expert level.
+TD Gammon is a a neural-network based algorithm that plays backgammon at a near expert level.
+--
 
 - Developed by Gerald Tesauro in 1992
-- Uses temoral-difference learning 
+--
+
+- Uses temoral-difference learning &amp; eligibility trace to update
+--
+
+- Begins with no strategy knowledge
 
 ---
 
-# Backgammon Rules
-## Fiona todo
+# Backgammon Game Setup
+
+![:scaleimgpct 30%](board_nice.png)
+
+--
+
+- 15 white pieces, 15 black pieces
+- 24 board locations (called points)
+
+--
+
+*The objective is to get all your pieces home*
+
 ---
 
-# Background Research 
-## Sally todo
+# Backgammon Game Play
+
+![:scaleimgpct 30%](board_nice.png)
+
+--
+
+- Each turn a player rolls two die
+--
+
+- Each player is moving in the opposite direction
+--
+
+- The number of steps a piece can be moved is exactly the number on die
+--
+
+- Can't move to a point with 5 pieces (its considered full)
+--
+
+- Can't move to point with more than one piece of the opposite color
+--
+
+- If there is only one piece of opposite color send that piece to "bar" 
+--
+
+- Once all pieces are on home board they can start "bearing off"
+--
+
+- First player to get all pieces off board wins!
+
+---
+# Backgammon Complexity
+
+Backgammon is an interesting game for AI because of its complexity and probabilistic elements... it's not purely strategy based!
+
+--
+
+Trying to take into account all possible board configurations and all possible future dice rolls is way too computationally intensive.... game has effective branching factor of about 400!
+
+--
+
+Conclusion: Search methods like those used in chess and checkers are impossible.
+
+--
+
+*Fun Fact: Because it is partly a game of chance Backgammon is used to bet money and there are more professional Backgammon players than professional chess players!*
+
+---
+# The Algorithm 
+
+The neural network is a *value function* that should be able to predict, given any board configuration, the realtive advantage of each player.
+--
+
+### Heuristics:
+--
+
+- We only know the *actual* relative advantage at the end of the game (win = 1, loss = 0.)
+--
+
+  + **Idea**: At the end of the game we can calculate error: 1 - expected value. Can we backpropegate this? 
+--
+
+- Yes. However, moves leading up to the end of the game influence the later position -- you can't just back propegate error once at the end. 
+--
+
+  + **Problem**: How can we continually update the value function, not just once at the end, even though we don't have an absolute value unless it's a win or loss? 
+
+---
+
+# The Algorithm (cont.)
+
+### Backprop weight updates:
+
+ .content-box-blue[
+  `$$W_{t+1} = W_{t} + \alpha \frac{\delta C_t}{\delta W_t} \\ b_{t+1} = b_{t} + \alpha \frac{\delta C_t}{\delta b_t}$$` where *t* is an increment of time. 
+ ]
+
+--
+
+### Issue 
+Only take into account current gradient. 
+---
+
+# Eligibility Traces
+
+
+ .content-box-blue[
+  `$$e_t = \lambda e_{t-1} + \frac{\delta C_t}{\delta \theta_t}$$`
+  ]
+
+---
+
+# Eligibility Traces (cont.)
+
+### Let's unpack that:
+
+.content-box-blue[
+`$$\\ e_0 = 0 \\ e_1 = 0 + \frac{\delta C_1}{\delta \theta_1} \\ e_2 = \lambda(\frac{\delta C_1}{\delta \theta_1}) + \frac{\delta C_2}{\delta \theta_2} \\ e_3 = \lambda[\lambda(\frac{\delta C_1}{\delta \theta_1}) + \frac{\delta C_2}{\delta \theta_2}] + \frac{\delta C_3}{\delta \theta_3}$$`
+]
+
+---
+
+# Tuning
+
+Now, we have an algorithm that takes into account the move history, using hyperparameter `\(\lambda\)` to weigh recent moves more heavily. 
+--
+
+
+#### Using `\(\lambda = 0\)`, 
+`$$e_t = 0 *e_{t-1} + \frac{\delta C_t}{\delta \theta_t} = \frac{\delta C_t}{\delta \theta_t}$$`
+--
+
+**Result**: Mostly looks at recent game states. 
+--
+
+
+#### Using `\(\lambda = 1\)`,
+`$$e_t = 1 *e_{t-1} + \frac{\delta C_t}{\delta \theta_t} = 1 * [1*(\frac{\delta C_1}{\delta \theta_1}) + \frac{\delta C_2}{\delta \theta_2}...] + \frac{\delta C_t}{\delta \theta_t} \\= \frac{\delta C_1}{\delta \theta_1} + \frac{\delta C_2}{\delta \theta_2} + ... + \frac{\delta C_n}{\delta \theta_n}$$`
+--
+
+**Result**: Counts all game states equally. 
 
 ---
 
 
-# Algorithm Mechanics
+# The Algorithm (cont.)
 
-## Sally todo
+### Error Value
+ .content-box-blue[
+  `$$error$$` 
+ ]
+
+### New weight updates:
+
+ .content-box-blue[
+  `$$W_{t+1} = W_{t} + \alpha * e_t * \text{error}  \\ b_{t+1} = b_{t} + \alpha \frac{\delta C_t}{\delta b_t}$$` where *t* is an increment of time. 
+ ]
+
+--
+
 ---
+# Teasuro's Implementation Details
 
+
+---
 
 # Our GUI 
-## Fiona todo
+
+Implementing the TD Gammon algorithm to play against a human.
+
+--
+
+- Use Shiny R package for interactive web apps
+
+--
+
+- Make an interactive game board that follows the rules of Backgammon 
+
+--
+
+Players
+- Human
+- Random Turn
+- AI Agent(s)
+
+--
+
+For any given board configurations the AI Agent takes a set of pretrained weights and uses a feed forward functinon to determine which move out of it's set of possible moves gives it the highest probability of winning. 
 
 ---
 
+![:scaleimgpct 65%](images/board.png)
+
+---
+# Testing our TD-gammon algorithm
+
+*There are many different variations on how to implement the TD-gammon algorithm*
+
+--
+
+- Run implemented TD-gammon algorithm (from github) to get weights (in python)
+
+--
+
+- Write matching feed forward agent that takes board configuration and weights and outputs best move (in R)
+
+
+---
 
 # Current State of the Algorithm 
-## Sally todo
+- Spent time working with TensorFlow, haven't gotten it to work 
+- Implementing using Vanilla R 
+- Challenges:
+  + Use of Objects in R is new
+  + Focus on good, readable code and architecture
+
 
 ---
 
 
 # Plans
-## Fiona &amp; Sally todo
+Ideas for experimentation with the algorithm:
+- Adding multiple hidden layers 
+- Using Relu instead of sigmoid 
+- Using varying numbers of nodes in hidden layer 
+- Using momentum or other tuning strategies 
 
 ---
-
-
-# Xaringan
-
-The following slides give examples of how to use Xaringan to format presentation slides. It isn't a template for your presentation, but it should help speed up preparation for Wednesday.
-
-If you examine this `Rmd` file you will see that slides are separated by a line starting with three dashes: `---`. It's that easy.
-
-Most slides start with a title. Titles are lines that begin with a single hash: `#`. It's that easy.
-
-Line returns are not meaningful.
-This line will continue right after the previous even though there is a line return after the first line.
-
-You need an empty line to start a new paragraph.
-
-*This is an italic line*
-
-**This is a bold line**
-
-This line uses embedded `R-code` to calculate `\(\pi=3.1415927\)`. That's `R-code` embedded inside inline `\(\LaTeX\)`. 
-
-
----
-
-#Xaringan
-
-You should be able to install Xaringan using RStudio `Tools-&gt;Install Packages`. If that doesn't work use the following code chunk:
-
-
-```r
-devtools::install_github("yihui/xaringan")
-```
-
-Here's a [link](https://slides.yihui.name/xaringan/) to the Xaringan introduction slides.
-
-You can see the `Rmd` file that generates the Xaringan intro slides by creating a new Xaringan presentation in RStudio as follows:
-
-`File -&gt; New File -&gt; R Markdown -&gt; From Template -&gt; Ninja Presentation`
-
-Use `UTF-8` when saving the Ninja Presentation. 
-
-These slides and the Xaringan introduction slides should cover everything you need.
-
----
-# Image with Related Quote/Footnote
-
-.medium[
-&gt;Speaking with Axios on the sidelines of an AI conference in Toronto on Wednesday, Hinton, a professor emeritus at the University of Toronto and a Google researcher, said he is now "deeply suspicious" of back-propagation, the workhorse method that underlies most of the advances we are seeing in the AI field today, including the capacity to sort through photos and talk to Siri. "My view is throw it all away and start again," he said&lt;sup&gt;1&lt;/sup&gt;
-]
-
-.center[ ![:scaleimgpct 70%](./images/hinton.png) ]
-
-.footnote-blue[
-
-[1] Quoted from [Axios](https://www.axios.com/artificial-intelligence-pioneer-says-we-need-to-start-over-1513305524-f619efbd-9db0-4947-a9b2-7a4c310a28fe.html)
-]
-
----
-
-#H1 Size Title
-
-##H2 Size Subtitle
-
-###H3 Size Sub-subtitle
-
-Here's how you bold words and set a footnote reference. The .bold[Xaringan] project is on **GitHub**&lt;sup&gt;1&lt;/sup&gt;
-
-If you want to you can .large[.bold[.red[use size and color]]] to make content stand out
-
-Xaringan is intended to be easy and flexible. Xaringan formatted Rmd files are preprocessed by `remark.js` to produce `HTML`. The associated `css` and `js` files allow for customization. If you examine the included `test.css` and `macros.js` files it should be clear how you can add your own custom elements. You will find code for `.large`, `.bold` and `.red` in `test.css`
-
-
-.footnote-blue[
-
-[1] See [GitHub](https://arxiv.org/pdf/1608.06993.pdf) for xaringan code
-
-]
-
----
-# Customized CSS
-
-The included `test.css` file contains a few useful formatting tools. Here's an example
-
-```
-.content-box-blue {
-    background-color: #e6f0ff;
-    border-radius: 5px;
-    padding: 20px;
- }
- ```
- 
- You can use this definition to make something stand out. For example, here's the `sigmoid` function:
- 
- .content-box-blue[
-  `$$\sigma(x)=\frac{1}{1+e^{-x}}$$`
- 
- ]
- 
----
-# Including Images/Macros.js
-
-Including images can be tedious because of sizing problems. To make things easier there is are `javascript` macros in the file `macros.js` that let you scale an image. Here is the syntax. Note that static images should go in the `./images` folder.
-
-```
-![:scaleimgpct 60%](./images/pca_layer0.PNG)
-```
-![:scaleimgpct 60%](./images/pca_layer0.PNG)
-
----
-
-# Default CSS
-
-You can add any definitions you want to the file `text.css`. The Xaringan standard `css` file is `libs -&gt; remark-css -&gt; default.css`. You should not edit this file, but  it contains many useful definitions. For example, `.pull-left` and `.pull-right` are demonstrated below
-
-```
-.pull-left {
-  float: left;
-  width: 47%;
-}
-.pull-right {
-  float: right;
-  width: 47%;
-}
-```
-
-.pull-left[
-.green[ **Left Side** ] 
-
-]
-
-.pull-right[
-.blue[ **Right Side** ]
-]
-
----
-#Including Images 2
-
-Now use `.pull-left, .pull-right` to include images side-by-side
-
-.pull-left[
-**PCA separation of MNIST data**
-![](./images/pca_layer0.PNG)
-
-]
-
-.pull-right[
-**PCA separation of layer 4 activations (MNIST input)**
-![](./images/pca_layer4.PNG)
-]
-
-
-
----
-
-
-#Example Slide/Lists with builds
-
-###Numbered List with build
-Build elements are separated by lines that start with two dashes: `--`. During your presentation the `down-arrow` key will advance the build
-
-1. first numbered item
-  + sub item
---
-
-1. second numbered item
---
-
-1. third item
-
---
-
-###Un-numbered list without build
-
-- first un-numbered item
-  + sub item
-- second un-numbered item
-
----
-#Dynamic Plots
-
-`R-code` can be used to dynamically compute a plot. Dynamically generated plots are saved in `&lt;rmd_file_name&gt;_files -&gt; figure-html`. The file name is the code chunk name followed by a hyphen and a graph number. 
-
-It's good practice to separate plot generation from plot display. The code below will create a `png` file called `xlnx-1.png`. Because `fig.show="hide"` it won't be displayed. The resulting graph is displayed twice on the next slide.
-
-
-```
-{r xlnx,echo=TRUE,fig.show="hide",fig.width=7,fig.height=3}
-pars=par(no.readonly = TRUE)
-par(mar=c(4,4,1,.1))
-grid=seq(0,1,length.out = 100)
-plot(grid,grid*log(grid),ylab="x*log(x)",xlab="x",ylim=c())
-par(pars)
-```
-
-
-
----
-
-# Left-Right Plots
-
-On this slide the plot generated previously is displayed. The left side uses inline `R-code` to find the image. The right side uses explicit file naming.
-
-.pull-left[
-
-.content-box-blue[
-  ![:scaleimgpct 90%](presentation_files/figure-html/xlnx-1.png)
-]
-]
-
-.pull-right[
-
-.content-box-green[
-  ![:scaleimgpct 75%](./template_files/figure-html/xlnx-1.png)
-]
-]
-
----
-
-
-
-#Table Example
-
-.pull-left[
-
-![:scaleimgpct 85%](./template_files/figure-html/dvol-1.png)
-]
-
-.pull-right[
-&lt;table&gt;
- &lt;thead&gt;
-  &lt;tr&gt;
-   &lt;th style="text-align:right;"&gt; dim &lt;/th&gt;
-   &lt;th style="text-align:right;"&gt; vol &lt;/th&gt;
-  &lt;/tr&gt;
- &lt;/thead&gt;
-&lt;tbody&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 2 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 3.1415927 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 5 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 5.2637890 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 8 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 4.0587121 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 11 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 1.8841039 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 14 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.5992645 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 17 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.1409811 &lt;/td&gt;
-  &lt;/tr&gt;
-  &lt;tr&gt;
-   &lt;td style="text-align:right;"&gt; 20 &lt;/td&gt;
-   &lt;td style="text-align:right;"&gt; 0.0258069 &lt;/td&gt;
-  &lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
-]
-
-- Distance to corner of cube grows as `\(\sqrt{d}\)`.  For `\(d&gt;4\)` the cube corners extend past the unit sphere.
-
-- Because factorial grows faster than exponential `\(\operatorname{Vol}(S^d) \rightarrow 0\)` as `\(d \rightarrow \infty\)`
-
-**Note:** `\(\Gamma (n)=(n-1)!\)`
-
----
-#Diagrams
-
-There is an easy to use online graphical editor for diagrams. I used [mathcha](https://www.mathcha.io/) for all the diagrams in my slides. Once you create a diagram you can download using the **`image`** button at the top of the editor. Some recommendations
-
-- Select **`png`** for download format
-- Check **`Background Transparent`** and **`No Grid`** in the **`image`** dialogue
-- After downloading use a tool like paint to tightly crop the image
-
-**Example**
-.center[ ![:scaleimgpct 75%](./images/mathcha_example.png) ]
-
----
-
-#Rayleigh Quotient
-
-.pull-left[
-For real symmetric A
-
-`$$R(A,\mathbf{y})= \frac{\mathbf{y}^T A\mathbf{y}}{\mathbf{y}^T \mathbf{y}}$$`
-`$$\min_{\mathbf{y}}{R(A\mathbf{y})}=R(A,v_{min}(A))=\lambda_{min}$$`
-`$$\max_{\mathbf{y}} R(A\mathbf{y})=R(A,v_{min}(A))=\lambda_{max}$$`
-]
-
-.pull-right[
-
-![](./images/rayleigh_quotient.png)
-
-]
-
-
----
-
-#MNIST Reconstruction
-
-.pull-left[
-**10 Eigen Digits**
-![](./images/mnist_recon_10.png)
-]
-
-.pull-right[
-**64 Eigen Digits**
-![](./images/mnist_recon_64.png)
-]
-  
----
-
-#Stochastic Neighbor Embedding
-
-**SNE**&lt;br&gt;
-Map high-dimensional data points to two or three dimensions for visualization
-- If high-dimensional data lie on a low dimensional manifold, want to preserve that structure.&lt;br&gt;
-- PCA will preserve low dimensional manifold only if it is linear.&lt;br&gt;
-- SNE tries to preserve 'neighborhoods' without explicitly learning the manifold.&lt;br&gt;
-
-![:scaleimgpct 90%](./images/manifold.png)
-
----
-
-#SNE
-.pull-left[
-Let `\(\mathbf{x}^{(i)}, i=1, \cdots,m\)` be points in a high dimensional space `\(\mathbb{R}^d\)`
-
-Create proximity measure for each point
-
-`$$x_{ij}^2=\left \| x^{(i)}-x^{(j)} \right \|^2$$`
-![:scaleimgpct 60%](images/7b-17.png)
-]
-
-.pull-right[
-
-To emphasize nearness, map distances using exponential
-
-`$$p_{j | i}= \frac{e^{- {x_{ij}^2}/({2 \sigma_i^2})}}{\sum_{k \neq i} e^{-{x_{ik}^2}/({2 \sigma_i^2})}}$$`
-&lt;br&gt;&lt;br&gt;
-**Note:** have softmax'd the vector `\(-{x_{ij}^2}/{(2 \sigma_i^2)}\)` for `\(j \neq i\)` to create probability distribution for each `\(i\)`
-
-&lt;br&gt;
-[Stochastic Neighbor Embedding, Hinton, Roweiss (2002)](https://cs.nyu.edu/~roweis/papers/sne_final.pdf) by Hinton, Roweis
-
-]
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
