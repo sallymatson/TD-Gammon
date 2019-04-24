@@ -1,0 +1,80 @@
+
+.title-slide {
+  background-image: url(images/Opener.png);
+  background-size: cover;
+}
+
+.left-column {
+  color: #777;
+  width: 20%;
+  height: 92%;
+  float: left;
+}
+
+.right-column {
+  width: 75%;
+  float: right;
+  padding-top: 1em;
+}
+
+h1, h2, h3 {
+  font-family: 'Yanone Kaffeesatz';
+  font-weight: normal;
+  color: rgb(0,0,255);
+}
+
+.footnote-blue {
+  position: absolute;
+  bottom: 3em;
+  padding-right: 4em;
+  font-size: 90%;
+  color: rgb(0,0,255);
+}
+
+.left-column3 {
+  width: 35%;
+  height: 95%;
+  float: left;
+}
+
+.right-column3 {
+  width: 60%;
+  float: right;
+  padding-top: 0;
+}
+
+.content-box-blue {
+    background-color: #e6f0ff;
+    border-radius: 5px;
+    padding: 20px;
+ }
+ .content-box-green {
+    background-color: #e6ffe6;
+    border-radius: 5px;
+    padding: 20px;
+ }
+ .content-box-purple {
+    background-color: #f0e6ff;
+    border-radius: 5px;
+    padding: 20px;
+ }
+ .content-box-red {
+    background-color: #ffe6e6;
+    border-radius: 5px;
+    padding: 20px;
+ }
+.large { font-size: 130% }
+.medium { font-size: 85% }
+.small { font-size: 70% }
+.bold { font-weight: bold; }
+.bolder { font-weight: bolder; }
+.black { color: black; }
+.red { color: red; }
+.green { color: green; }
+.blue { color: blue; }
+.yellow { color: #FFD960; }
+.orange { color: #F09905; }
+.purple { color: #993399; }
+.gray { color: #666666; }
+.grey { color: #B5B5B5; }
+
