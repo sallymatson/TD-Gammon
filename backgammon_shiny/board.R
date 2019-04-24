@@ -24,14 +24,17 @@ for (i in x.points){
 # Points for bearing off
 df_board.x = c(df_board.x, rep(52, times = 15), rep(55, times = 15))
 df_board.y = c(df_board.y, seq(1.4,7,by=.4), seq(1.4,7,by=.4))
-#1+(b*.4)
+
+df_board.x = c(df_board.x, 17.5, 20, 22.5, 17.5, 20, 22.5, 
+  27.5, 30, 32.5, 27.5, 30, 32.5 )
+df_board.y = c(df_board.y, 3.75, 3.75, 3.75, 4.25, 4.25, 4.25, 
+  3.75, 3.75, 3.75, 4.25, 4.25, 4.25)  
+
 df_board = data.frame(cbind(df_board.x,df_board.y))
 colnames(df_board)<- c("x", "y")
 
 require(plyr)
 # initialize board global variable
-
-
 
 turn <- function(selected_points) {
   x.move = selected_points$x
@@ -100,38 +103,82 @@ board_move <- function(selected_points){
     move <<- !move
     if(y.move >=4.5){
       index = 0.25*(x.move - 3) + 13
-      if (board[index] > 0){
-        board[index] = board[index] + 1
-      }
-      else if(board[index] < 0){
-        board[index] = board[index] - 1
-      }
-      else {
-        if (playerB){
-          board[index] = board[index] - 1
-        }
-        else{
+      error_str = check_move(index)
+      print(error_str)
+      if(error_str == "Valid move"){
+        if (board[index] > 0){
           board[index] = board[index] + 1
         }
+        else if(board[index] < 0){
+          board[index] = board[index] - 1
+        }
+        else {
+          if (playerB){
+            board[index] = board[index] - 1
+          }
+          else{
+            board[index] = board[index] + 1
+          }
+        }
+      }
+      else if(error_str == "Illegal move"){
+        move <<- !move # undo move
+        return(board)
+      }
+      else{
+        # PIECE TO BAR
+        # # 25=white bar, 26=white off, 27=black off, 28=black bar
+        if(playerB){
+          board[25] = board[25] + 1
+          board[index] = -1
+        }
+        else{
+          board[28] = board[28] + 1
+          board[index] = 1
+          
+        }
+        return(board)
       }
     }
     
     # bottom of board::: loc = 50 - ((i-1)*4 + 3)  [solve for i]
     else if(y.move <=3){
       index = 1 - (x.move - 47)*0.25
-      if (board[index] > 0){
-        board[index] = board[index] + 1
-      }
-      else if(board[index] < 0){
-        board[index] = board[index] - 1
-      }
-      else {
-        if (playerB){
-          board[index] = board[index] - 1
-        }
-        else{
+      error_str = check_move(index)
+      print(error_str)
+      if(error_str == "Valid move"){
+        if (board[index] > 0){
           board[index] = board[index] + 1
         }
+        else if(board[index] < 0){
+          board[index] = board[index] - 1
+        }
+        else {
+          if (playerB){
+            board[index] = board[index] - 1
+          }
+          else{
+            board[index] = board[index] + 1
+          }
+        }
+      }
+      else if(error_str == "Illegal move"){
+        move <<- !move # undo move
+        return(board)
+      }
+      else{
+        # PIECE TO BAR
+        # # 25=white bar, 26=white off, 27=black off, 28=black bar
+        if(playerB){
+          board[25] = board[25] + 1
+          board[index] = -1
+        }
+        else{
+          board[28] = board[28] + 1
+          board[index] = 1
+          
+        }
+        return(board)
       }
     }
     
@@ -195,28 +242,111 @@ board_move <- function(selected_points){
 }  
   
 
+check_off <- function(){
+  # Checking if we can legally bear off
+    if (playerB){
+      return(can.bear.off(flip.board(board)))
+    }
+    else {
+      return(can.bear.off(board))
+    }
+  }
+  
+check_move <- function(index){
+  # positive numbers are white
+  # negative numbers are black
+  
+  # Checking if should be sent to bar
+  # Or if legal move
+    if (playerB){
+      if(board[index]>1){
+        return("Illegal move")
+      }
+      else if(board[index]==1){
+        return("Piece to bar")
+      }
+      else{
+        return("Valid move")
+      }
+    }
+  
+    else {
+      print("white")
+      if(board[index] < -1){
+        return("Illegal move")
+      }
+      else if(board[index]== -1){
+        return("Piece to bar")
+      }
+      else{
+        return("Valid move")
+      }
+      
+      
+      
+    }
+  
+}
+  
+
+
 board_update <- function(selected_points) {
   
   x.move = selected_points$x
   y.move = selected_points$y
   
+  print("x.move  ||  y.move")
+  print(x.move)
+  print(y.move)
   # TO DO check choice is valid
   #valid = check_choice(selected_points)
   valid = !empty(selected_points)
+   
   if(valid){
     
-    if(x.move < 50){
-    board_move(selected_points)
-    }
-    else if(x.move > 50 && x.move <53){
+   if(x.move > 50 && x.move <53){
+     if(check_off()){
       board[26] <<- board[26] + 1
       move <<- !move
+     }
       return(board)
     }
     else if (x.move >53 && x.move < 56){
-      move <<- !move
-      board[27] <<- board[27] + 1
+      if(check_off()){
+        move <<- !move
+        board[27] <<- board[27] + 1
+      }
       return(board)
+    }
+# 25=white bar, 26=white off, 27=black off, 28=black bar    
+    else if(y.move > 3.5 && y.move <4.5 && x.move <25){
+      print("white bar")
+      if (move){
+        board[25] <<- board[25] - 1
+        move <<- !move
+        return(board)
+      }
+      else {
+        board[25] <<- board[25] + 1
+        move <<- !move
+        return(board)
+      }
+    }
+    else if (y.move >3.5 && y.move < 4.5 && x.move >25){
+      print("black bar")
+     if(move){
+       move <<- !move
+       board[28] <<- board[28] - 1
+       return(board)
+     }
+      else{
+        move <<- !move
+        board[28] <<- board[28] + 1
+        return(board)
+      }
+    }
+    else if(x.move < 50){
+      board_move(selected_points)
     }
     
   }
@@ -277,6 +407,48 @@ board_update <- function(selected_points) {
       }
     }
     # 25=white bar, 26=white off, 27=black off, 28=black bar
+    # -----   BAR  -------
+    count.grey = 0
+    for ( b in 1:3){
+      if (count.grey < board[25]){
+        points(x = 15+(2.5*b), y = 3.75, pch = 19, cex = 3, col = "grey")
+        count.grey = count.grey + 1
+      }
+      else{
+        points(x = 15+(2.5*b), y = 3.75, pch = 1, cex = 3, col = "grey")
+      }
+    }
+    for ( b in 4:6){
+      if (count.grey < board[25]){
+        points(x = 7.5+(2.5*b), y = 4.25, pch = 19, cex = 3, col = "grey")
+        count.grey = count.grey + 1
+      }
+      else{
+        points(x = 7.5+(2.5*b), y = 4.25, pch = 1, cex = 3, col = "grey")
+      }
+    }
+    # **********   BLACK   **********
+    count.black = 0
+    for ( b in 1:3){
+      if (count.black < board[28]){
+        points(x = 25+(2.5*b), y = 3.75, pch = 19, cex = 3, col = "black")
+        count.black = count.black + 1
+      }
+      else{
+        points(x = 25+(2.5*b), y = 3.75, pch = 1, cex = 3, col = "black")
+      }
+    }
+    for ( b in 4:6){
+      if (count.black < board[28]){
+        points(x = 17.5 +(2.5*b), y = 4.25, pch = 19, cex = 3, col = "black")
+        count.black = count.black + 1
+      }
+      else{
+        points(x = 17.5 +(2.5*b), y = 4.25, pch = 1, cex = 3, col = "black")
+      }
+    }
+    # 25=white bar, 26=white off, 27=black off, 28=black bar
+    # ------  OFF ----------
     count.grey = 0
     for ( b in 1:15){
       if (count.grey < board[26]){
@@ -330,5 +502,23 @@ board_update <- function(selected_points) {
     lines(x = (21:25)+24, y = yT, col = "red", lwd = 4)
     
     
+    # Making a box in the middle of the board
+    # Horizontal line
+    lines(x = seq(15,35,by=1), y = rep(3.5, times = 21), col = "black", lwd = 2, lty=2)  
+    lines(x = seq(15,35,by=1), y = rep(4.5, times = 21), col = "black", lwd = 2, lty=2)  
+    
+    # Verticle line
+    lines(x = rep(15, times = 2), y = seq(3.5, 4.5, by = 1), col = "black", lwd = 2, lty=2)  
+    lines(x = rep(35, times = 2), y = seq(3.5, 4.5, by = 1), col = "black", lwd = 2, lty=2)       
+    
+    # Adding dice rolls
+    text(x = 5.3, y=4.4, labels= "DICE ROLL", cex = 1.25)
+    text(x = 5.3, y=4, labels= toString(roll), cex= 1.75)
+    
  }
+ 
+ 
+ 
+ 
+ 
  
