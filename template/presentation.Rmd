@@ -14,6 +14,7 @@ output:
       beforeInit: "macros.js"
 ---
 
+
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
 # find.image searches subdirectories for partial match of argument. Useful when some images are dynamically generated
@@ -23,6 +24,8 @@ find.image=function(name){grep(name,list.files(recursive = TRUE),value=TRUE)}
 #![:scaleimgpct 100%](`r find.image("mnist_digits")`)
 
 ```
+
+
 
 # TD Gammon 
 
@@ -39,11 +42,68 @@ TD Gammon is a a neural-network based algorithm that plays backgammon at a near 
 
 ---
 
-# Backgammon Rules
-Backgammon is an interesting game to use to train an AI because of its complexity.
+# Backgammon Game Setup
+
+![:scaleimgpct 30%](board_nice.png)
+
+--
+
+- 15 white pieces, 15 black pieces
+- 24 board locations (called points)
+
+--
+
+*The objective is to get all your pieces home*
 
 ---
 
+# Backgammon Game Play
+
+![:scaleimgpct 30%](board_nice.png)
+
+--
+
+- Each turn a player rolls two die
+--
+
+- Each player is moving in the opposite direction
+--
+
+- The number of steps a piece can be moved is exactly the number on die
+--
+
+- Can't move to a point with 5 pieces (its considered full)
+--
+
+- Can't move to point with more than one piece of the opposite color
+--
+
+- If there is only one piece of opposite color send that piece to "bar" 
+--
+
+- Once all pieces are on home board they can start "bearing off"
+--
+
+- First player to get all pieces off board wins!
+
+---
+# Backgammon Complexity
+
+Backgammon is an interesting game for AI because of its complexity and probabilistic elements... it's not purely strategy based!
+
+--
+
+Trying to take into account all possible board configurations and all possible future dice rolls is way too computationally intensive.... game has effective branching factor of about 400!
+
+--
+
+Conclusion: Search methods like those used in chess and checkers are impossible.
+
+--
+
+*Fun Fact: Because it is partly a game of chance Backgammon is used to bet money and there are more professional Backgammon players than professional chess players!*
+
+---
 # The Algorithm 
 
 The neural network is a *value function* that should be able to predict, given any board configuration, the realtive advantage of each player.
@@ -144,23 +204,46 @@ $$e_t = 1 *e_{t-1} + \frac{\delta C_t}{\delta \theta_t} = 1 * [1*(\frac{\delta C
 
 # Our GUI 
 
-The second aspect of our project is to implement the TD Gammon algorithm to play against a human.
+Implementing the TD Gammon algorithm to play against a human.
 
-We use R Shiny Server to make an interactive game board that follows the rules of Backgammon discussed earlier in the presentation.
+--
+
+- Use Shiny R package for interactive web apps
+
+--
+
+- Make an interactive game board that follows the rules of Backgammon 
+
+--
 
 Players
 - Human
 - Random Turn
-- AI Agent
+- AI Agent(s)
 
-The AI Agent takes a set of pretrained weights and uses the feed forward algorithm to determine which move out of it's set of possible moves gives it the highest probability of winning. 
+--
+
+For any given board configurations the AI Agent takes a set of pretrained weights and uses a feed forward functinon to determine which move out of it's set of possible moves gives it the highest probability of winning. 
 
 ---
 
 ![:scaleimgpct 65%](images/board.png)
 
 ---
+# Testing our TD-gammon algorithm
 
+*There are many different variations on how to implement the TD-gammon algorithm*
+
+--
+
+- Run implemented TD-gammon algorithm (from github) to get weights (in python)
+
+--
+
+- Write matching feed forward agent that takes board configuration and weights and outputs best move (in R)
+
+
+---
 
 # Current State of the Algorithm 
 - Spent time working with TensorFlow, haven't gotten it to work 
@@ -181,8 +264,3 @@ Ideas for experimentation with the algorithm:
 - Using momentum or other tuning strategies 
 
 ---
-
-
-
-
-
