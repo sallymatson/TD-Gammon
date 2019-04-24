@@ -40,7 +40,8 @@ TD Gammon is a a neural-network based algorithm that plays backgammon at a near 
 ---
 
 # Backgammon Rules
-## Fiona todo
+Backgammon is an interesting game to use to train an AI because of its complexity.
+
 ---
 
 # The Algorithm 
@@ -124,7 +125,7 @@ $$e_t = 1 *e_{t-1} + \frac{\delta C_t}{\delta \theta_t} = 1 * [1*(\frac{\delta C
 
 ### Error Value
  .content-box-blue[
-  $$W_{t+1} = W_{t} + \alpha * e_t * \text{error}  \\ b_{t+1} = b_{t} + \alpha \frac{\delta C_t}{\delta b_t}$$ where *t* is an increment of time. 
+  $$error$$ 
  ]
 
 ### New weight updates:
@@ -135,11 +136,28 @@ $$e_t = 1 *e_{t-1} + \frac{\delta C_t}{\delta \theta_t} = 1 * [1*(\frac{\delta C
 
 --
 
+---
+# Teasuro's Implementation Details
+
 
 ---
 
 # Our GUI 
-## Fiona todo
+
+The second aspect of our project is to implement the TD Gammon algorithm to play against a human.
+
+We use R Shiny Server to make an interactive game board that follows the rules of Backgammon discussed earlier in the presentation.
+
+Players
+- Human
+- Random Turn
+- AI Agent
+
+The AI Agent takes a set of pretrained weights and uses the feed forward algorithm to determine which move out of it's set of possible moves gives it the highest probability of winning. 
+
+---
+
+![:scaleimgpct 65%](images/board.png)
 
 ---
 
@@ -147,14 +165,20 @@ $$e_t = 1 *e_{t-1} + \frac{\delta C_t}{\delta \theta_t} = 1 * [1*(\frac{\delta C
 # Current State of the Algorithm 
 - Spent time working with TensorFlow, haven't gotten it to work 
 - Implementing using Vanilla R 
-  + Challenges: Use of Objects in R is new, want good quality/readable code 
+- Challenges:
+  + Use of Objects in R is new
+  + Focus on good, readable code and architecture
 
 
 ---
 
 
 # Plans
-## Fiona & Sally todo
+Ideas for experimentation with the algorithm:
+- Adding multiple hidden layers 
+- Using Relu instead of sigmoid 
+- Using varying numbers of nodes in hidden layer 
+- Using momentum or other tuning strategies 
 
 ---
 
