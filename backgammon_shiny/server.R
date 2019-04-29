@@ -17,7 +17,7 @@ source("ai_agent.R")
 board <<-init.black() + init.white()
 print("initial board")
 str(board)
-
+error <<- F
 playerB <<- TRUE 
 move <<- TRUE
 value <<- -200
@@ -45,11 +45,16 @@ shinyServer(function(input, output) {
     # Next player's turn
     observeEvent(input$turn, {
         if (input$turn != valueTurn){
+            
+            # TO DO: HIGHLIGHT POSSIBLE MOVES
+            # TO DO: CHECK THAT MOVES ARE LEGAL
+            
             playerB <<- !playerB
             move <<- TRUE
             roll <<- roll.dice()
             valueTurn <<- input$turn
         }
+
     })
     
     # AI's turn
@@ -60,18 +65,51 @@ shinyServer(function(input, output) {
             roll <<- roll.dice()
             valueAIturn <<- input$AIturn
             # PLACE HOLDER
-            board <<- init.black() + init.white()
+                if(possible()){
+                print("MOVES POSSIBLE")
+                print(ai_move(board, roll, playerB))
+                board <<- ai_move(board, roll, playerB)
+                    if(game.over(board) || game.over(flip.board(board))){
+                        showModal(modalDialog(
+                            title = "Important message",
+                            "Game over!",easyClose = TRUE
+                        ))
+                    }
+                }
+                else{
+                    print("NO POSSIBLE MOVES")
+                    showModal(modalDialog(
+                        title = "Important message",
+                        "No possible moves!",easyClose = TRUE
+                    ))
+                }
         }
+        
     })
     
     # Random turn
     observeEvent(input$Rturn, {
-        if (input$Rturn != valueRturn){
+        if (input$Rturn != valueRturn  && possible()){
             playerB <<- !playerB
             move <<- TRUE
             roll <<- roll.dice()
             valueRturn <<- input$Rturn
+            if(possible()){
             board <<- random_turn()
+                if(game.over()){
+                    showModal(modalDialog(
+                        title = "Important message",
+                        "Game over!",easyClose = TRUE
+                    ))
+                }
+            }
+            else{
+                print("NO POSSIBLE MOVES")
+                showModal(modalDialog(
+                    title = "Important message",
+                    "No possible moves!",easyClose = TRUE
+                ))
+            }
         }
     })
     
@@ -85,11 +123,15 @@ shinyServer(function(input, output) {
         
          return(selected_points)
      })
+    
+
+         
 
     
     output$plot1 <- renderPlot({
         board_plot(selected())
     })
     output$click_info <- renderPrint({ turn(selected()) })
+    
 
 })

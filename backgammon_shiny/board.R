@@ -36,6 +36,30 @@ colnames(df_board)<- c("x", "y")
 require(plyr)
 # initialize board global variable
 
+possible <- function(){
+  # Return False if no possible moves
+  if(playerB){
+    x = find.all.possible.moves(flip.board(board), roll)
+    if (length(x)==0){
+      return(F)
+    }
+    else{
+      return(T)
+    }
+    
+  }
+  else{
+  x = find.all.possible.moves(board, roll)
+  if (length(x)==0){
+    return(F)
+  }
+  else{
+    return(T)
+  }
+  }
+  
+}
+
 turn <- function(selected_points) {
   x.move = selected_points$x
   y.move = selected_points$y
@@ -430,7 +454,7 @@ board_update <- function(selected_points) {
     # **********   BLACK   **********
     count.black = 0
     for ( b in 1:3){
-      if (count.black < board[28]){
+      if (count.black < abs(board[28])){
         points(x = 25+(2.5*b), y = 3.75, pch = 19, cex = 3, col = "black")
         count.black = count.black + 1
       }
@@ -439,7 +463,7 @@ board_update <- function(selected_points) {
       }
     }
     for ( b in 4:6){
-      if (count.black < board[28]){
+      if (count.black < abs(board[28])){
         points(x = 17.5 +(2.5*b), y = 4.25, pch = 19, cex = 3, col = "black")
         count.black = count.black + 1
       }
@@ -461,7 +485,7 @@ board_update <- function(selected_points) {
     }
     count.black = 0
     for ( b in 1:15){
-      if (count.black < board[27]){
+      if (count.black < abs(board[27])){
         points(x = 55, y = 1+(b*.4), pch = 19, cex = 3, col = "black")
         count.black = count.black + 1
       }

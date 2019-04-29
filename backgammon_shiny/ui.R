@@ -18,9 +18,10 @@ shinyUI(fluidPage(
     fluidRow(
         column(width = 8,
                h4("Game instructions"),
-               h6("1. After selecting a button you must click inside the board to complete the action."),
-               h6("2. After clicking Random turn/AI turn you must click == Next Player's Turn == for your turn.")
-        )
+               h5("1. After selecting a button you must click inside the board to complete the action. (This includes after dismissing a popup message)"),
+               h5("2. After clicking Random turn/AI turn you must click == Next Player's Turn == for your turn."),
+               h5("3. White moves counterclockwise and Black moves clockwise.")
+               )
     ),
  #   br(),
     fluidRow(
@@ -32,7 +33,7 @@ shinyUI(fluidPage(
         )
     )
     ,
- 
+
  actionButton('newGame','New Game'),
  actionButton('turn','Next player\'s turn'),
  actionButton('Rturn','Random turn'),
