@@ -17,8 +17,8 @@ df_board.y = NULL
 # Points on main board
 x.points = seq(3,47, by=4)
 for (i in x.points){
-  df_board.x = c(df_board.x, rep(i, times = 10))
-  df_board.y = c(df_board.y, seq(5,7,by=.5), seq(1,3,by=.5))
+  df_board.x = c(df_board.x, rep(i, times = 42))
+  df_board.y = c(df_board.y, seq(4,7,by=.125), seq(1,3,by=.125))
 }
 
 # Points for bearing off
@@ -166,7 +166,7 @@ board_move <- function(selected_points){
     }
     
     # bottom of board::: loc = 50 - ((i-1)*4 + 3)  [solve for i]
-    else if(y.move <=3){
+    else if(y.move <=3.5){
       index = 1 - (x.move - 47)*0.25
       error_str = check_move(index)
       print(error_str)
@@ -312,7 +312,18 @@ check_move <- function(index){
   
 }
   
-
+# check_choice <- function(selected_points, ){
+#   if (playerB){
+#     moves=find.all.possible.moves(flip.board(board),roll)
+# 
+#     return(flip.board(board))
+#   }
+#   else {
+#     moves=find.all.possible.moves(board,roll)
+#     board <<- moves[[sample(1:length(moves), 1)]]
+#     return(board)
+#   }
+# }
 
 board_update <- function(selected_points) {
   
@@ -326,7 +337,7 @@ board_update <- function(selected_points) {
   #valid = check_choice(selected_points)
   valid = !empty(selected_points)
    
-  if(valid){
+  if(valid && !inactive){
     
    if(x.move > 50 && x.move <53){
      if(check_off()){
@@ -384,6 +395,7 @@ board_update <- function(selected_points) {
  #  print("Debugging Information")
   #  print(selected)
   # print(board_update(selected))
+   
     board <<- board_update(selected)
    
 
@@ -408,7 +420,17 @@ board_update <- function(selected_points) {
         loc = 50 - ((i-1)*4 + 3)
         #print(paste("bottom ",loc))
         for (j in 1:num){
-          points(x = loc, y = .5+(j*.5), pch = 19, cex = 3, col =colP)
+          if (num <= 5){
+            points(x = loc, y = .5+(j*.5), pch = 19, cex = 3, col =colP)
+          }
+          else if (5 < num && num <=9){
+          points(x = loc, y = .75+(j*.3), pch = 19, cex = 3, col =colP)
+          }
+          else {
+            points(x = loc, y = .75+(j*.2), pch = 19, cex = 3, col =colP)
+          }
+         
+          
         }
       }
     }
@@ -426,8 +448,16 @@ board_update <- function(selected_points) {
         loc = (i-13)*4 + 3
         #print(paste("top",loc))
         for (j in 1:num){
+          if (num <6){
           points(x = loc, y = 7.5-j*.5, pch = 19, cex = 3, col = colP)
-        }
+          }
+          else if (6 <= num && num <= 9){
+            points(x = loc, y = 7.3-j*.3, pch = 19, cex = 3, col = colP)
+          }
+          else {
+            points(x = loc, y = 7.2-j*.2, pch = 19, cex = 3, col = colP)
+          }
+      }
       }
     }
     # 25=white bar, 26=white off, 27=black off, 28=black bar

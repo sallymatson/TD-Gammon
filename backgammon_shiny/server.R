@@ -24,6 +24,7 @@ value <<- -200
 valueTurn <<- -200
 valueAIturn <<- -200
 valueRturn <<- -200
+inactive <<- FALSE
 roll <<- roll.dice()
 shinyServer(function(input, output) {
 
@@ -37,6 +38,7 @@ shinyServer(function(input, output) {
         board <<- init.black() + init.white()
         playerB <<- TRUE 
         move <<- TRUE
+        inactive <<- TRUE
         value <<- input$newGame
         }
         
@@ -48,11 +50,17 @@ shinyServer(function(input, output) {
             
             # TO DO: HIGHLIGHT POSSIBLE MOVES
             # TO DO: CHECK THAT MOVES ARE LEGAL
-            
+            inactive <<- TRUE
             playerB <<- !playerB
             move <<- TRUE
             roll <<- roll.dice()
             valueTurn <<- input$turn
+        }
+        if(game.over(board) || game.over(flip.board(board))){
+            showModal(modalDialog(
+                title = "Important message",
+                "Game over!",easyClose = TRUE
+            ))
         }
 
     })
@@ -64,6 +72,7 @@ shinyServer(function(input, output) {
             move <<- TRUE
             roll <<- roll.dice()
             valueAIturn <<- input$AIturn
+            inactive <<- TRUE
             # PLACE HOLDER
                 if(possible()){
                 print("MOVES POSSIBLE")
@@ -94,9 +103,10 @@ shinyServer(function(input, output) {
             move <<- TRUE
             roll <<- roll.dice()
             valueRturn <<- input$Rturn
+            inactive <<- TRUE
             if(possible()){
             board <<- random_turn()
-                if(game.over()){
+                if(game.over(board) || game.over(flip.board(board))){
                     showModal(modalDialog(
                         title = "Important message",
                         "Game over!",easyClose = TRUE
@@ -120,17 +130,23 @@ shinyServer(function(input, output) {
 
         #print("selected points: ")
        # print(selected_points)
-        
          return(selected_points)
      })
     
 
-         
+
 
     
     output$plot1 <- renderPlot({
+        print("board sum:")
+        print(sum(board))
         board_plot(selected())
+        inactive <<- FALSE
+        
     })
+    
+
+    
     output$click_info <- renderPrint({ turn(selected()) })
     
 

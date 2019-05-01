@@ -82,24 +82,32 @@ sigmoid = function(x) 1 / (1 + exp(-x))
 #hiddenAct = 1/(1+np.exp(-(self.w1.dot(features)+self.b1)))
 #v = 1/(1+np.exp(-(self.w2.dot(hiddenAct)+self.b2)))
 #py_install(c('pickle'))
-Sys.setenv(RETICULATE_PYTHON = './env/bin/python')
-require(reticulate)
-use_virtualenv('./env', required = TRUE)
+#Sys.setenv(RETICULATE_PYTHON = './env/bin/python')
+#require(reticulate)
+#use_virtualenv('./env', required = TRUE)
 
-source_python("wimport.py")
-w <<- read_file("weights0.bin")
+#source_python("wimport.py")
+#w <<- read_file("weights0.bin")
 
+#importing weights from csv and not from python because Shiny Server
+#doesn't seem to have easily functioning python environment
+#for reticulate package
+
+w1.in <- read.csv("w1.csv", header = F)
+b1.in <- read.csv("b1.csv", header = F)
+w2.in <- read.csv("w2.csv", header = F)
+b2.in <- read.csv("b2.csv", header = F)
 win_prob <- function(boardF, player){
   
   # get features
   feat = array(findFeat(boardF, player),dim = c(294,1))
   # feat = array(feat, dim = c(294,1))
   #w = readBin('weights0.bin', what="double")
-  w1 = w[[1]]  # 50 by 294
-  b1 = w[[2]]  # 1  by 50
+  w1 = as.matrix(w1.in)  # 50 by 294
+  b1 = as.matrix(b1.in)  # 1  by 50
   
-  w2 = w[[3]]  # 50 by 1
-  b2 = w[[4]]  # 1 by 1
+  w2 = as.matrix(w2.in)  # 50 by 1
+  b2 = as.matrix(b2.in)  # 1 by 1
   
   # z = 50x1 + 50x294 * 294x1
   z = t(b1) + w1 %*% feat

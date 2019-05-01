@@ -18,12 +18,13 @@ shinyUI(fluidPage(
     fluidRow(
         column(width = 8,
                h4("Game instructions"),
-               h5("1. After selecting a button you must click inside the board to complete the action. (This includes after dismissing a popup message)"),
-               h5("2. After clicking Random turn/AI turn you must click == Next Player's Turn == for your turn."),
-               h5("3. White moves counterclockwise and Black moves clockwise.")
+               p("1. After selecting a button you must click inside the board to complete the action. (This includes after dismissing a popup message)"),
+               p("2. After clicking Random turn/AI turn you must click == Next Player's Turn == for your turn."),
+               p("3. White moves counterclockwise and Black moves clockwise.")
                )
     ),
  #   br(),
+
     fluidRow(
         column(width = 4,
                plotOutput("plot1", height = 600,width = 600,
@@ -38,11 +39,17 @@ shinyUI(fluidPage(
  actionButton('turn','Next player\'s turn'),
  actionButton('Rturn','Random turn'),
  actionButton('AIturn','AI\'s turn'),
+ 
 
     fluidRow( br(),
         column(width = 8,
                verbatimTextOutput("click_info")
-        )
+        ),
+        br()
+        
     )
+ #,fluidRow(p("Created by: Fiona Paine  ", align = "center"))
     
-))
+
+)
+)
