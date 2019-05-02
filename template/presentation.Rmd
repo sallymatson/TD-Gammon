@@ -45,7 +45,7 @@ TD Gammon<sup>1</sup> is a a neural-network based algorithm that plays backgammo
 
 # Backgammon Game Setup
 
-![:scaleimgpct 30%](board_nice.png)
+![:scaleimgpct 30%](images/board_nice.png)
 
 --
 
@@ -60,7 +60,7 @@ TD Gammon<sup>1</sup> is a a neural-network based algorithm that plays backgammo
 
 # Backgammon Game Play
 
-![:scaleimgpct 30%](board_nice.png)
+![:scaleimgpct 30%](images/board_nice.png)
 
 --
 

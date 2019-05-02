@@ -65,7 +65,7 @@ can.bear.off=function(board){
   board[w.bar]==0 & all(board[7:24]<=0)
 }
 flip.board=function(board){
-  -c(rev(board[points]),rev(board[25:28]))
+  return(-c(rev(board[points]),rev(board[25:28])))
 }
 white.points=function(board){
   which(board[points]>0)
@@ -77,7 +77,7 @@ verbose=FALSE
 training=FALSE
 #------------------
 
-play.game=function(p1, p2, verbose){
+play.game=function(p1, p2){
   history=list()
   turns=0
   roll.dice=roll.dice.cl()
@@ -89,9 +89,12 @@ play.game=function(p1, p2, verbose){
     player=-player
     roll=roll.dice()
     
-    if(verbose)print(paste("player=",player))
-    if(verbose)print(paste("roll=",paste(roll,collapse=",")))
-    if(verbose)print.board(board)
+    if(verbose){
+      print(paste("Turn",turns))
+      print(paste("player=",player))
+      print(paste("roll=",paste(roll,collapse=",")))
+      print.board(board)
+    }
     
     old.board=board
     if (player == 1){
@@ -106,11 +109,10 @@ play.game=function(p1, p2, verbose){
   }
   if(player==-1)board=flip.board(board)
   history[[length(history)+1]]=list(player=player,roll=NA,board=board)
-  print(paste("gave.over=",player,game.over(board)))
-  print.board(board)
-  list(player=player,turns=turns,history=history)
+  if(verbose)print(paste("gave.over=",player,game.over(board)))
+  if(verbose)print.board(board)
+  list(player=player,turns=turns,history=history,winner=player,turns=turns)
 }
-
 # returns a list of board configurations that can result from a roll
 # note that the order of the dice can make a difference, so both orders are used
 # assumes roll has 2 different integers or 4 identical integers

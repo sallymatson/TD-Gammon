@@ -10,18 +10,21 @@ make_vanilla_agent=function(n.hid,f,df,n.in=28){
   weights = init.wgts(n.in,n.hid,1)
   ets = init.zeros(n.in,n.hid,1)
   move=td.move
-  return(list(weights=weights,ets=ets,move=move))
+  return(list(weights=weights,ets=ets,move=move,f=f,df=df,g=sigmoid,name="VanillaAgent"))
 }
 
 td.move=function(board,roll,vanilla_agent){
   moves=find.all.possible.moves(board,roll)
   max = -1
-  new_move = moves[0]
-  for (i in length(moves)){
-    curr = fwd.prop(move[i],agent)
-    if (curr > max){
-      new_move = moves[i]
-      max = curr
+  if (length(moves) <= 0) {
+    return(board)
+  }
+  new_move = moves[[1]]
+  for (i in 1:length(moves)){
+    curr = fwd.prop(moves[[i]],agent$weights)
+    if (curr$a2 > max){
+      new_move = moves[[i]]
+      max = curr$a2
     }
   }
   return(new_move)
@@ -29,7 +32,7 @@ td.move=function(board,roll,vanilla_agent){
 
 make_human_agent=function(){
   move=human.move
-  return(list(move=move))
+  return(list(move=move,name="HumanAgent"))
 }
 
 
@@ -39,18 +42,19 @@ human.move=function(){
 
 make_random_agent=function(){
   move=random.agent.move
-  return(list(move=move))
+  return(list(move=move,name="RandomAgent"))
 }
 
 random.agent.move=function(board, roll){
   moves=find.all.possible.moves(board,roll)
-  n=length(possible.moves)
+  n=length(moves)
   if (n>0) {
     i=sample(n,1)
-    board=possible.moves[[i]]
+    board=moves[[i]]
   } else {
-    if(verbose)print(paste(player,"unable to play"))
+    if(verbose)print(paste("unable to play"))
+    return(board)
   }
-  new.board=possible.moves[[i]]
+  new.board=moves[[i]]
   return(new.board)
 }

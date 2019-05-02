@@ -1,0 +1,53 @@
+---
+title: "final_project"
+author: "Sally Matson"
+date: "4/27/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+source("vanilla_r_nn.R")
+source("agents.R")
+source("nn-utils.R")
+source("backgammon_board.R")
+source("eval.R")
+library(zeallot)
+```
+
+## Gradient Calculations
+We used a basic backpropegation algorithm for our calculations.
+```{r}
+
+```
+
+
+
+```{r }
+max.games = 100
+agent = make_vanilla_agent(40,relu,drelu,n.in=28)
+trained_agent = nnet1.fit(agent,ALPHA=0.1,LAMBDA=0.8,max.games,TRUE)
+cost_hist = trained_agent$cost
+eval_hist = trained_agent$eval
+wv_hist = trained_agent$wv_hist
+lv_hist = trained_agent$lv_hist
+
+plot(0,0,xlim=c(0,max.games/100),ylim=c(0,1), type="n", ylab="", xlab="Epochs")
+lines(x=seq(1,max.games/100), y=eval_hist, col="red")
+
+plot(0,0,xlim=c(0,max.games),ylim=c(0,1), type="n", ylab="", xlab="Epochs")
+lines(x=seq(1,max.games), y=cost_hist, col="red")
+
+
+plot(0,0,xlim=c(0,max.games),ylim=c(0,1), type="n", ylab="", xlab="Epochs")
+lines(x=seq(1,max.games), y=wv_hist, col="red")
+lines(x=seq(1,max.games), y=lv_hist, col="blue")
+```
+
+```{r}
+eval = eval(agent,make_random_agent())
+eval$p1
+eval$avg_turns
+```
+
+
