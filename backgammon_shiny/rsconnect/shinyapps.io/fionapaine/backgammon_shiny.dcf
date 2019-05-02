@@ -5,9 +5,9 @@ account: fionapaine
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 887922
-bundleId: 2053484
+bundleId: 2056156
 url: https://fionapaine.shinyapps.io/backgammon_shiny/
-when: 1556738244.92576
+when: 1556828063.01854
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: .Rapp.history|show_weight.py|weights0.bin|wimport.py

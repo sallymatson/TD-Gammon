@@ -25,7 +25,9 @@ valueTurn <<- -200
 valueAIturn <<- -200
 valueRturn <<- -200
 inactive <<- FALSE
+pick <<- 0
 roll <<- roll.dice()
+roll.track <<- roll
 shinyServer(function(input, output) {
 
     # xpoints = c(3,47) by 4, ylim = c(7,5)&c(3,1) by 0.5
@@ -40,6 +42,8 @@ shinyServer(function(input, output) {
         move <<- TRUE
         inactive <<- TRUE
         value <<- input$newGame
+        roll <<- roll.dice()
+        roll.track <<- roll
         }
         
     })
@@ -54,6 +58,7 @@ shinyServer(function(input, output) {
             playerB <<- !playerB
             move <<- TRUE
             roll <<- roll.dice()
+            roll.track <<- roll
             valueTurn <<- input$turn
         }
         if(game.over(board) || game.over(flip.board(board))){
@@ -73,6 +78,7 @@ shinyServer(function(input, output) {
             roll <<- roll.dice()
             valueAIturn <<- input$AIturn
             inactive <<- TRUE
+            roll.track <<- 0
             # PLACE HOLDER
                 if(possible()){
                 print("MOVES POSSIBLE")
@@ -104,6 +110,7 @@ shinyServer(function(input, output) {
             roll <<- roll.dice()
             valueRturn <<- input$Rturn
             inactive <<- TRUE
+            roll.track <<- 0
             if(possible()){
             board <<- random_turn()
                 if(game.over(board) || game.over(flip.board(board))){

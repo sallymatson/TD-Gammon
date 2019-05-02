@@ -68,8 +68,9 @@ turn <- function(selected_points) {
   #print("PLAYER B")
   #print(playerB)
   #print(valid2)
-  print("DICE ROLL:")
-  print(roll)
+  print("Dice moves remaining:")
+  print(roll.track)
+  
   if (playerB && move){
     # tracking whose turn
     
@@ -129,7 +130,9 @@ board_move <- function(selected_points){
       index = 0.25*(x.move - 3) + 13
       error_str = check_move(index)
       print(error_str)
+    
       if(error_str == "Valid move"){
+        
         if (board[index] > 0){
           board[index] = board[index] + 1
         }
@@ -149,7 +152,7 @@ board_move <- function(selected_points){
         move <<- !move # undo move
         return(board)
       }
-      else{
+      else if(error_str == "Piece to bar"){
         # PIECE TO BAR
         # # 25=white bar, 26=white off, 27=black off, 28=black bar
         if(playerB){
@@ -157,10 +160,15 @@ board_move <- function(selected_points){
           board[index] = -1
         }
         else{
-          board[28] = board[28] + 1
+          board[28] = board[28] - 1
           board[index] = 1
           
         }
+        return(board)
+      }
+      
+      else {
+        move <<- !move # undo move
         return(board)
       }
     }
@@ -198,7 +206,7 @@ board_move <- function(selected_points){
           board[index] = -1
         }
         else{
-          board[28] = board[28] + 1
+          board[28] = board[28] - 1
           board[index] = 1
           
         }
@@ -220,6 +228,7 @@ board_move <- function(selected_points){
     # Top of the board
     if(y.move >=5){
       index = 0.25*(x.move - 3) + 13
+      pick <<- index
       if (board[index] > 0){
         board[index] = board[index] - 1
       }
@@ -239,6 +248,7 @@ board_move <- function(selected_points){
     # bottom of board::: loc = 50 - ((i-1)*4 + 3)  [solve for i]
     else {
       index = 1 - (x.move - 47)*0.25
+      pick <<- index
       if (board[index] > 0){
         board[index] = board[index] - 1
       }
@@ -280,30 +290,48 @@ check_move <- function(index){
   # positive numbers are white
   # negative numbers are black
   
+  if ((index-pick) == 0){
+    return("Valid move")
+  }
   # Checking if should be sent to bar
   # Or if legal move
     if (playerB){
+      diff = index - pick
+      
       if(board[index]>1){
         return("Illegal move")
       }
+      else if ( !(diff %in% roll.track)) {
+        return("Illegal move")
+      }
       else if(board[index]==1){
+        roll.track <<- roll.track[-match(diff, roll.track)]
         return("Piece to bar")
       }
       else{
+        roll.track <<- roll.track[-match(diff, roll.track)]
         return("Valid move")
+        
       }
     }
   
     else {
       print("white")
+      diff =  pick - index
       if(board[index] < -1){
         return("Illegal move")
       }
+      else if ( !(diff %in% roll.track)) {
+        return("Illegal move")
+      }
       else if(board[index]== -1){
+        roll.track <<- roll.track[-match(diff, roll.track)]
         return("Piece to bar")
       }
       else{
+        roll.track <<- roll.track[-match(diff, roll.track)]
         return("Valid move")
+        
       }
       
       
@@ -311,17 +339,33 @@ check_move <- function(index){
     }
   
 }
-  
-# check_choice <- function(selected_points, ){
+  #make.single.move(board, roll[i])
+# check_choice(old.b, new.b)
+# check_choice <- function(old.b, new.b){
 #   if (playerB){
-#     moves=find.all.possible.moves(flip.board(board),roll)
-# 
-#     return(flip.board(board))
+#     b.flip = flip.board(old.b)
+#     if(length(roll)==2){
+#       moves=c(make.single.move(b.flip,roll[1]), make.single.move(b.flip,roll[2]))
+#     }
+#     else {
+#       moves=c(make.single.move(b.flip,roll[1]), make.single.move(b.flip,roll[2]),
+#               make.single.move(b.flip,roll[3]), make.single.move(b.flip,roll[4]))
+#     }
+#     print("checking move.....")
+#     print(flip.board(new.b) %in% moves)
+#   return(flip.board(new.b) %in% moves)
 #   }
 #   else {
-#     moves=find.all.possible.moves(board,roll)
-#     board <<- moves[[sample(1:length(moves), 1)]]
-#     return(board)
+#     if(length(roll)==2){
+#       moves=c(make.single.move(new.b,roll[1]), make.single.move(new.b,roll[2]))
+#     }
+#     else {
+#       moves=c(make.single.move(new.b,roll[1]), make.single.move(new.b,roll[2]),
+#               make.single.move(new.b,roll[3]), make.single.move(new.b,roll[4]))
+#     }
+#     print("checking move....")
+#     print(new.b %in% moves)
+#     return(new.b %in% moves)
 #   }
 # }
 
@@ -341,15 +385,19 @@ board_update <- function(selected_points) {
     
    if(x.move > 50 && x.move <53){
      if(check_off()){
+       
       board[26] <<- board[26] + 1
       move <<- !move
+      
      }
       return(board)
     }
     else if (x.move >53 && x.move < 56){
       if(check_off()){
-        move <<- !move
-        board[27] <<- board[27] + 1
+        # black off
+        board[27] <<- board[27] - 1
+          move <<- !move
+
       }
       return(board)
     }
@@ -359,6 +407,7 @@ board_update <- function(selected_points) {
       if (move){
         board[25] <<- board[25] - 1
         move <<- !move
+        pick <<- 25
         return(board)
       }
       else {
@@ -371,12 +420,13 @@ board_update <- function(selected_points) {
       print("black bar")
      if(move){
        move <<- !move
-       board[28] <<- board[28] - 1
+       pick <<- 0
+       board[28] <<- board[28] + 1
        return(board)
      }
       else{
         move <<- !move
-        board[28] <<- board[28] + 1
+        board[28] <<- board[28] - 1
         return(board)
       }
     }
