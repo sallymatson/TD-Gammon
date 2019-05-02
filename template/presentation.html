@@ -24,7 +24,7 @@ class: center, middle, inverse, title-slide
 
 # TD Gammon 
 
-TD Gammon is a a neural-network based algorithm that plays backgammon at a near expert level.
+TD Gammon&lt;sup&gt;1&lt;/sup&gt; is a a neural-network based algorithm that plays backgammon at a near expert level.
 --
 
 - Developed by Gerald Tesauro in 1992
@@ -35,10 +35,56 @@ TD Gammon is a a neural-network based algorithm that plays backgammon at a near 
 
 - Begins with no strategy knowledge
 
+
 ---
 
 # Backgammon Rules
 Backgammon is an interesting game to use to train an AI because of its complexity.
+
+# Backgammon Game Setup
+
+![:scaleimgpct 30%](images/board_nice.png)
+
+--
+
+- 15 white pieces, 15 black pieces
+- 24 board locations (called points)
+
+--
+
+*The objective is to get all your pieces home*
+
+---
+
+# Backgammon Game Play
+
+![:scaleimgpct 30%](images/board_nice.png)
+
+--
+
+- Each turn a player rolls two die
+--
+
+- Each player is moving in the opposite direction
+--
+
+- The number of steps a piece can be moved is exactly the number on die
+--
+
+- Can't move to a point with 5 pieces (its considered full)
+--
+
+- Can't move to point with more than one piece of the opposite color
+--
+
+- If there is only one piece of opposite color send that piece to "bar" 
+--
+
+- Once all pieces are on home board they can start "bearing off"
+--
+
+- First player to get all pieces off board wins!
+>>>>>>> master
 
 ---
 
@@ -53,7 +99,10 @@ The neural network is a *value function* that should be able to predict, given a
 - We only know the *actual* relative advantage at the end of the game (win = 1, loss = 0.)
 --
 
-  + **Idea**: At the end of the game we can calculate error: 1 - expected value. Can we backpropegate this? 
+- Want to minimize the difference between the value before the turn and after 
+--
+
+  + **Idea**: At the end of the game we can calculate error: 1 - *calculated value from previous turn*. Can we backpropegate this? 
 --
 
 - Yes. However, moves leading up to the end of the game influence the later position -- you can't just back propegate error once at the end. 
@@ -65,7 +114,7 @@ The neural network is a *value function* that should be able to predict, given a
 
 # The Algorithm (cont.)
 
-### Backprop weight updates:
+### Backprop weight updates
 
  .content-box-blue[
   `$$W_{t+1} = W_{t} + \alpha \frac{\delta C_t}{\delta W_t} \\ b_{t+1} = b_{t} + \alpha \frac{\delta C_t}{\delta b_t}$$` where *t* is an increment of time. 
@@ -74,14 +123,14 @@ The neural network is a *value function* that should be able to predict, given a
 --
 
 ### Issue 
-Only take into account current gradient. 
+Only take into account current gradient. In this application, want to remember previous moves as well.
 ---
 
 # Eligibility Traces
 
 
  .content-box-blue[
-  `$$e_t = \lambda e_{t-1} + \frac{\delta C_t}{\delta \theta_t}$$`
+  `$$e_t = \lambda e_{t-1} + \frac{\delta C_t}{\delta \theta_t}$$` where `\(\theta\)` is any adjustable parameter.
   ]
 
 ---
@@ -123,19 +172,52 @@ Now, we have an algorithm that takes into account the move history, using hyperp
 
 ### Error Value
  .content-box-blue[
-  `$$error$$` 
- ]
-
-### New weight updates:
-
- .content-box-blue[
-  `$$W_{t+1} = W_{t} + \alpha * e_t * \text{error}  \\ b_{t+1} = b_{t} + \alpha \frac{\delta C_t}{\delta b_t}$$` where *t* is an increment of time. 
+  `\(\text{Error}=V_t(s_{t+1})-V_t(s_t)\)` 
+  where `\(V_{i}\)` = 0,1 if `\(i\)` is the final move, and `\(V\)` is the value of the network output.
  ]
 
 --
 
+### New weight updates
+
+ .content-box-blue[
+  `$$\theta_{t+1} = \theta_{t} + \alpha * \text{error} * e_t$$`
+ ]
+
+
 ---
-# Teasuro's Implementation Details
+# Tesauro's Implementation Details
+Tesauro did not give full details of his algorithm. However, we know the basics:&lt;sup&gt;5&lt;/sup&gt;
+--
+
+- Network size: three layers (one hidden layer)
+--
+
+- Hidden layer size: 40 nodes
+--
+
+- Games played: 200,000
+--
+
+- Learning rate (alpha): 0.1
+--
+
+- Decay (lambda): 0.8
+--
+
+- Sigmoid activations
+
+--
+
+## Some Unknowns
+
+- What other things did he experiment with? 
+--
+
+- Did he wipe eligibility traces? 
+--
+
+- etc.
 
 
 ---
@@ -159,26 +241,82 @@ The AI Agent takes a set of pretrained weights and uses the feed forward algorit
 
 ---
 
+<<<<<<< HEAD
+=======
+*There are many different variations on how to implement the TD-gammon algorithm*
+
+--
+
+- Run implemented TD-gammon algorithm (from github) to get weights (in python)
+
+--
+
+
+- Write matching feed forward agent that takes board configuration and weights and outputs best move (in R)
+
+
+---
+>>>>>>> master
 
 # Current State of the Algorithm 
 - Spent time working with TensorFlow, haven't gotten it to work 
-- Implementing using Vanilla R 
-- Challenges:
-  + Use of Objects in R is new
-  + Focus on good, readable code and architecture
+--
 
+- Implementing using Vanilla R 
+--
+
+- Have downloaded and trained another implementation that we will play against ours 
+--
+
+- Challenges:
+--
+
+  + Use of Objects in R is new
+--
+
+  + Focus on good, readable code and architecture
+--
+  
+  + Training intensive algorithm
+--
+
+  + Many possible variations, every online source does it slightly differently
 
 ---
-
 
 # Plans
 Ideas for experimentation with the algorithm:
+--
+
 - Adding multiple hidden layers 
+--
+
 - Using Relu instead of sigmoid 
+--
+
 - Using varying numbers of nodes in hidden layer 
-- Using momentum or other tuning strategies 
+--
+
+- Using momentum or other tuning strategies to try to improve performance
+
 
 ---
+# Sources 
+[1] [Tesauro's Original Paper](http://modelai.gettysburg.edu/2013/tdgammon/pa4.pdf)
+
+[2] [Stanford Paper comparing Td-gammon to a Baysean approach](http://cs229.stanford.edu/proj2013/MolinFlyhammarBidgol-UsingMachineLearningToTeachAComputerToPlayBackgammon.pdf)
+
+[3] [Cornell Article with good pseudocode](https://www.cs.cornell.edu/boom/2001sp/Tsinteris/gammon.htm)
+
+[4] [Helpful medium article with link to tensorflow explination](https://medium.com/jim-fleming/before-alphago-there-was-td-gammon-13deff866197)
+
+[5] [Class assignment with some Java pseudocode](http://modelai.gettysburg.edu/2013/tdgammon/pa4.pdf)
+
+
+---
+
+
+# Questions?
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
