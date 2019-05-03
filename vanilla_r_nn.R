@@ -43,79 +43,104 @@ train.game=function(agent,ALPHA,LAMBDA,verbose){
   reward_hist = list()
   p1_hist = list()
   p2_hist = list()
+  p = "white"
   
   while(game.over(board)==0){
     turns=turns+1
     # NEW TURN
     
-    # Flips the board so that it's always from the white tile's perspective
+    # Flips the board so that the current player always sees it as a
+    # white board (i.e. both players think they're white and move in the 
+    # negative direction.)
     board=flip.board(board)
-
+    
     player=-player
     roll=roll.dice()
     
     old.board=board
-    board = agent$move(board, roll, agent)
     
-    if (game.over(board)!=0){
-      # Game is over! The current player won. 
-      # Backpropegate with a reward of 1
-      reward_win = 1
-      pred_win = fwd.prop(old.board,agent$weights,agent$f)
-      win_val = pred_win$a2[1][1]
-      bprop_win = bk.prop(old.board,as.matrix(reward_win),agent$weights$w2,pred_win,agent$df)
-      
-      # The OTHER player lost.
-      # backprop the flipped board with reward of 0
-      reward_loss = 0
-      pred_loss = fwd.prop(flip.board(old.board),agent$weights,agent$f)
-      loss_val = pred_loss$a2[1][1]
-      bprop_loss = bk.prop(flip.board(old.board),as.matrix(reward_loss),agent$weights$w2,pred_loss,agent$df)
-      
-      # add both so that they both back propegate 
-      bprop = list()
-      bprop$db1 = bprop_loss$db1 + bprop_win$db1
-      bprop$db2 = bprop_loss$db2 + bprop_win$db2
-      bprop$dw1 = bprop_loss$dw1 + bprop_win$dw1
-      bprop$dw2 = bprop_loss$dw2 + bprop_win$dw2
-      
-      reward = 1
-      actual = win_val
-
+    # change the player
+    if (p == "white") {
+      p = "black"
+      # It is the black player's turn. 
+      # On black turns, the plan is to minimize the target function 
+      # when passing in the white board.
+      board = agent$move(board, roll, agent)
     } else {
-      # Backprop, using current evaluation as desired output,
-      # and the board position previous to the current move as the input.
-      reward = fwd.prop(board,agent$weights,agent$f)$a2
-      output = fwd.prop(old.board,agent$weights,agent$f)
-      actual = output$a2[1][1]
-      bprop = bk.prop(old.board,reward,agent$weights$w2,output,agent$df)
-      reward = reward[1][1]
+      p = "white"
+      board = agent$move(board, roll, agent)
     }
-
+    
+    if (game.over(board)!=0){ # GAME IS OVER
+      
+      if (p == "white") {
+        # Game is over and white won.
+        # Since the board is from white's perspective, 
+        # backprop with a reward of 1.
+        reward = 1
+        pred_win = fwd.prop(old.board,agent$weights,agent$f)
+        bprop = bk.prop(old.board,as.matrix(reward),agent$weights$w2,pred_win,agent$df)
+        win_val = pred_win$a2[1][1]
+        loss_val = fwd.prop(flip.board(old.board),agent$weights,agent$f)$a2[1][1]
+        actual = win_val
+      } else {
+        # Game is over and black has won (i.e. white lost.)
+        # Since it is black's turn, the board is currently from black's perspective. 
+        # To backprop 0, we need to flip the board first to make it white's perspective.
+        reward = 0
+        pred_loss = fwd.prop(flip.board(old.board),agent$weights,agent$f)
+        bprop = bk.prop(flip.board(old.board),as.matrix(reward),agent$weights$w2,pred_loss,agent$df)
+        # compute a2 values for both people's current board view
+        loss_val = pred_loss$a2[1][1]
+        win_val = fwd.prop(old.board,agent$weights,agent$f)$a2[1][1]
+        reward = 1
+        actual = win_val
+      }
+    } else { # IF THE GAME IS NOT OVER
+      
+      if (p ==  "white"){
+        # Backprop, using current evaluation as desired output,
+        # and the board position previous to the current move as the input.
+        # the board is from white's perspective, so we don't need to flip it.
+        reward = fwd.prop(board,agent$weights,agent$f)$a2
+        output = fwd.prop(old.board,agent$weights,agent$f)
+        actual = output$a2[1][1]
+        bprop = bk.prop(old.board,reward,agent$weights$w2,output,agent$df)
+        reward = reward[1][1]
+      } else {
+        reward = fwd.prop(board,agent$weights,agent$f)$a2
+        output = fwd.prop(old.board,agent$weights,agent$f)
+        actual = output$a2[1][1]
+        bprop = bk.prop(old.board,reward,agent$weights$w2,output,agent$df)
+        reward = reward[1][1]
+      }
+    }
+    
     error = abs(reward - actual)
     # Update all gradient
     agent$ets$b1 = LAMBDA*agent$ets$b1 + bprop$db1
     agent$weights$b1 = agent$weights$b1 - ALPHA*agent$ets$b1*error
-
+    
     agent$ets$b2 = LAMBDA*agent$ets$b2 + bprop$db2
     agent$weights$b2 = agent$weights$b2 - ALPHA*agent$ets$b2*error
-
+    
     agent$ets$w1 = LAMBDA*agent$ets$w1 + bprop$dw1
     agent$weights$w1 = agent$weights$w1 - ALPHA*agent$ets$w1*error
-
+    
     agent$ets$w2 = LAMBDA*agent$ets$w2 + bprop$dw2
     agent$weights$w2 = agent$weights$w2 - ALPHA*agent$ets$w2*error
-
+    
     cost = cost + cost.squared.error(old.board,reward,agent$weights,agent$f,g=sigmoid)
     
-    if (player == -1){
+    if (p == "white"){
       p1_hist[[turns]] = actual
     } else {
       p2_hist[[turns]] = actual
     }
   }
   list(agent=agent,
-       winner=player,
+       winner=p,
+       w=player,
        turns=turns,
        p1_hist=p1_hist,
        p2_hist=p2_hist,
@@ -139,7 +164,7 @@ nnet1.fit=function(agent,ALPHA,LAMBDA,max.games=500,EVAL,eval_freq){
   winner = list()
   
   for (i in 1:max.games){
-  
+    
     # trains for a full game
     game = train.game(agent,ALPHA,LAMBDA,FALSE)
     agent = game$agent
@@ -150,10 +175,10 @@ nnet1.fit=function(agent,ALPHA,LAMBDA,max.games=500,EVAL,eval_freq){
     games_p1[[i]] = game$p1_hist
     games_p2[[i]] = game$p2_hist
     winner[[i]] = game$winner
-  
+    
     if(EVAL && (i%%eval_freq==0)){
       print(i)
-      check = eval(agent,make_random_agent(),250)$p1
+      check = evaluate(agent,make_random_agent(),250)$p1
       print(paste(i/eval_freq,check))
       eval_hist[[(i/eval_freq)[1]]] = check
     }

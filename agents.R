@@ -10,7 +10,7 @@ make_vanilla_agent=function(n.hid,f,df,n.in=28){
   weights = init.wgts(n.in,n.hid,1)
   ets = init.zeros(n.in,n.hid,1)
   move=td.move
-  return(list(weights=weights,ets=ets,move=move,f=f,df=df,g=sigmoid,name="VanillaAgent"))
+  return(list(weights=weights,ets=ets,move=move,black.move=td.move.black,f=f,df=df,g=sigmoid,name="VanillaAgent"))
 }
 
 td.move=function(board,roll,vanilla_agent){
@@ -25,6 +25,23 @@ td.move=function(board,roll,vanilla_agent){
     if (curr$a2 > max){
       new_move = moves[[i]]
       max = curr$a2
+    }
+  }
+  return(new_move)
+}
+
+td.move.black=function(board,roll,vanilla_agent){
+  moves=unique(find.all.possible.moves(board,roll))
+  min = 2
+  if (length(moves) <= 0) {
+    return(board)
+  }
+  new_move = moves[[1]]
+  for (i in 1:length(moves)){
+    curr = fwd.prop(moves[[i]],vanilla_agent$weights,vanilla_agent$f)
+    if (curr$a2 < min){
+      new_move = moves[[i]]
+      min = curr$a2
     }
   }
   return(new_move)

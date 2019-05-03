@@ -1,4 +1,4 @@
-eval=function(p1,p2,num.games=100,verbose=FALSE){
+evaluate=function(p1,p2,num.games=100,verbose=FALSE){
   p1_wins = 0
   p2_wins = 0
   total_turns = 0
