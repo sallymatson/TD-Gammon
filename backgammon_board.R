@@ -98,9 +98,9 @@ play.game=function(p1, p2){
     
     old.board=board
     if (player == 1){
-      board = p1$move(board, roll)
+      board = p1$move(board, roll, p1)
     } else if (player == -1){
-      board = p2$move(board, roll)
+      board = p2$move(board, roll, p2)
     }
     play=describe.move(roll,old.board,board)
     history[[length(history)+1]]=list(player=player,roll=roll,play=play,board=old.board)

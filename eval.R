@@ -7,7 +7,7 @@ eval=function(p1,p2,num.games=100,verbose=FALSE){
     winner = game$winner
     turns = game$turns
     #print(paste("Game",i,"took",turns,"turns"))
-    if (winner == -1){
+    if (winner == 1){
       p1_wins = p1_wins + 1
     } else {
       p2_wins = p2_wins + 1

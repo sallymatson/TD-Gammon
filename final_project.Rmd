@@ -15,39 +15,103 @@ source("eval.R")
 library(zeallot)
 ```
 
+## Value Function
+```{r}
+print.fun('fwd.prop')
+```
+
+
 ## Gradient Calculations
 We used a basic backpropegation algorithm for our calculations.
 ```{r}
-
+print.fun('bk.prop')
 ```
 
 
+```{r}
+max.games = 1000
+eval_freq = 500
+untrained_agent = make_vanilla_agent(40,relu,drelu,n.in=28)
+trained_agent.1000 = nnet1.fit(untrained_agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.2000 = nnet1.fit(trained_agent.1000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.3000 = nnet1.fit(trained_agent.2000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.4000 = nnet1.fit(trained_agent.3000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.5000 = nnet1.fit(trained_agent.4000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.6000 = nnet1.fit(trained_agent.5000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.7000 = nnet1.fit(trained_agent.6000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.8000 = nnet1.fit(trained_agent.7000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.9000 = nnet1.fit(trained_agent.8000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.10000 = nnet1.fit(trained_agent.9000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.11000 = nnet1.fit(trained_agent.10000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.12000 = nnet1.fit(trained_agent.11000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.13000 = nnet1.fit(trained_agent.12000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.14000 = nnet1.fit(trained_agent.13000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.15000 = nnet1.fit(trained_agent.14000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.16000 = nnet1.fit(trained_agent.15000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.17000 = nnet1.fit(trained_agent.16000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.18000 = nnet1.fit(trained_agent.17000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.19000 = nnet1.fit(trained_agent.18000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.20000 = nnet1.fit(trained_agent.19000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
+trained_agent.21000 = nnet1.fit(trained_agent.20000$agent,ALPHA=0.1,LAMBDA=0.8,max.games,FALSE,eval_freq)
 
-```{r }
-max.games = 100
-agent = make_vanilla_agent(40,relu,drelu,n.in=28)
-trained_agent = nnet1.fit(agent,ALPHA=0.1,LAMBDA=0.8,max.games,TRUE)
-cost_hist = trained_agent$cost
-eval_hist = trained_agent$eval
-wv_hist = trained_agent$wv_hist
-lv_hist = trained_agent$lv_hist
-
-plot(0,0,xlim=c(0,max.games/100),ylim=c(0,1), type="n", ylab="", xlab="Epochs")
-lines(x=seq(1,max.games/100), y=eval_hist, col="red")
-
-plot(0,0,xlim=c(0,max.games),ylim=c(0,1), type="n", ylab="", xlab="Epochs")
-lines(x=seq(1,max.games), y=cost_hist, col="red")
 
 
-plot(0,0,xlim=c(0,max.games),ylim=c(0,1), type="n", ylab="", xlab="Epochs")
-lines(x=seq(1,max.games), y=wv_hist, col="red")
-lines(x=seq(1,max.games), y=lv_hist, col="blue")
+untrained_2 = make_vanilla_agent(40,sigmoid,dsigmoid,n.in=28)
+trained_agent.10000 = nnet1.fit(untrained_2,ALPHA=0.1,LAMBDA=0.7,10000,FALSE,eval_freq)
+cost_hist = trained_agent.10000$cost
+wv_hist = c(trained_agent.1000$wv_hist, trained_agent.21000$wv_hist)
+lv_hist = trained_agent.10000$lv_hist
+
+
+plot(0,0,xlim=c(0,max.games),ylim=c(0,0.2), type="n", ylab="", xlab="Epochs")
+points(x=seq(1,length(cost_hist)), y=cost_hist, col="red")
+abline(lm(unlist(cost_hist) ~ seq(1,length(cost_hist))))
+
+plot(0,0,xlim=c(0,length(wv_hist)),ylim=c(0,1), type="n", ylab="", xlab="Epochs")
+points(x=seq(1,length(wv_hist)), y=wv_hist, col="red")
+points(x=seq(1,length(lv_hist)), y=lv_hist, col="blue")
+abline(lm(unlist(wv_hist) ~ seq(1,length(wv_hist))))
+abline(lm(unlist(lv_hist) ~ seq(1,length(lv_hist))))
+
 ```
 
 ```{r}
-eval = eval(agent,make_random_agent())
+trained_agent = trained_agent.3000
+cost_hist = trained_agent$cost
+wv_hist = trained_agent$wv_hist
+lv_hist = trained_agent$lv_hist
+
+wv_hist = c(trained_agent.1000$wv_hist, trained_agent.2000$wv_hist, trained_agent.3000$wv_hist, trained_agent.4000$wv_hist,trained_agent.5000$wv_hist)
+lv_hist = c(trained_agent.1000$lv_hist, trained_agent.2000$lv_hist, trained_agent.3000$lv_hist, trained_agent.4000$lv_hist,trained_agent.5000$lv_hist)
+
+plot(0,0,xlim=c(0,max.games),ylim=c(0,0.2), type="n", ylab="", xlab="Epochs")
+points(x=seq(1,max.games), y=cost_hist, col="red")
+abline(lm(unlist(cost_hist) ~ seq(1,max.games)))
+
+plot(0,0,xlim=c(0,length(wv_hist)),ylim=c(0,1), type="n", ylab="", xlab="Epochs")
+points(x=seq(1,length(wv_hist)), y=wv_hist, col="red")
+points(x=seq(1,length(lv_hist)), y=lv_hist, col="blue")
+abline(lm(unlist(wv_hist) ~ seq(1,length(wv_hist))))
+abline(lm(unlist(lv_hist) ~ seq(1,length(lv_hist))))
+```
+
+
+```{r}
+eval = eval(untrained_agent,make_random_agent(),300)
 eval$p1
 eval$avg_turns
 ```
 
+```{r}
+winners = trained_agent.4000$winner
+p1_hist = trained_agent.4000$games_p1
+p2_hist = trained_agent.4000$games_p2
+i = 50
+p1 = p1_hist[[i]]
+p2 = p2_hist[[i]]
+winner = winners[[i]]
+unlist(p1)
+unlist(p2)
+winner
+```
 

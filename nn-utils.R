@@ -29,11 +29,15 @@ drelu=function(x){
   return(1*(x>=0))
 }
 
-cost.squared.error=function(x,y,weights,g=sigmoid){
+dsigmoid=function(x){
+  return (sigmoid(x)*(1-sigmoid(x)))
+}
+
+cost.squared.error=function(x,y,weights,f,g=sigmoid){
   # Takes dataset x and labels y
   # Computes the squared error cost of the dataset 
   # Returns the cost
-  yhats = fwd.prop(x,weights)$a2
+  yhats = fwd.prop(x,weights,f)$a2
   result = sum((y-yhats)^2)
   return(result/(2*length(y)))
 }
@@ -71,6 +75,9 @@ num.gradient=function(x,y,agent,f,g,cost,eps=1e-8){
   } 
   return(list(db1=db1,db2=db2,dw1=dw1,dw2=dw2))
 }
+
+#helper function to print functions
+print.fun=function(x){header=deparse(args(x))[1]; b=body(x);  print(gsub('function',x,header));  print(b);}
 
 
 

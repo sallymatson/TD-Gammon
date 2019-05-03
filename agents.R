@@ -14,14 +14,14 @@ make_vanilla_agent=function(n.hid,f,df,n.in=28){
 }
 
 td.move=function(board,roll,vanilla_agent){
-  moves=find.all.possible.moves(board,roll)
+  moves=unique(find.all.possible.moves(board,roll))
   max = -1
   if (length(moves) <= 0) {
     return(board)
   }
   new_move = moves[[1]]
   for (i in 1:length(moves)){
-    curr = fwd.prop(moves[[i]],agent$weights)
+    curr = fwd.prop(moves[[i]],vanilla_agent$weights,vanilla_agent$f)
     if (curr$a2 > max){
       new_move = moves[[i]]
       max = curr$a2
@@ -45,7 +45,7 @@ make_random_agent=function(){
   return(list(move=move,name="RandomAgent"))
 }
 
-random.agent.move=function(board, roll){
+random.agent.move=function(board, roll, self){
   moves=find.all.possible.moves(board,roll)
   n=length(moves)
   if (n>0) {
