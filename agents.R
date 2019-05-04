@@ -31,7 +31,8 @@ td.move=function(board,roll,vanilla_agent){
 }
 
 td.move.black=function(board,roll,vanilla_agent){
-  moves=unique(find.all.possible.moves(board,roll))
+  # Thank you, Brian from the other team, for this line:
+  moves=lapply(find.all.possible.moves(flip.board(board),roll),flip.board)
   min = 2
   if (length(moves) <= 0) {
     return(board)

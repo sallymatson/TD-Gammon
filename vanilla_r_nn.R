@@ -34,89 +34,48 @@ bk.prop=function(x,y,w2,fprop,df){
 }
 
 train.game=function(agent,ALPHA,LAMBDA,verbose){
-  
+
   turns=0
   roll.dice=roll.dice.cl()
   board=flip.board(init.board())
   player=-1
   cost = 0
   reward_hist = list()
-  p1_hist = list()
-  p2_hist = list()
-  p = "white"
+  game_hist = list()
+  player = "black"
   
-  while(game.over(board)==0){
+  while(game.over(board)==0 & game.over(flip.board(board))==0){
+
     turns=turns+1
-    # NEW TURN
-    
-    # Flips the board so that the current player always sees it as a
-    # white board (i.e. both players think they're white and move in the 
-    # negative direction.)
-    board=flip.board(board)
-    
-    player=-player
     roll=roll.dice()
-    
     old.board=board
     
     # change the player
-    if (p == "white") {
-      p = "black"
-      # It is the black player's turn. 
-      # On black turns, the plan is to minimize the target function 
-      # when passing in the white board.
-      board = agent$move(board, roll, agent)
+    if (player == "white") {
+      player = "black"
+      board = agent$black.move(board, roll, agent)
     } else {
-      p = "white"
+      player = "white"
       board = agent$move(board, roll, agent)
     }
     
-    if (game.over(board)!=0){ # GAME IS OVER
-      
-      if (p == "white") {
-        # Game is over and white won.
-        # Since the board is from white's perspective, 
-        # backprop with a reward of 1.
-        reward = 1
-        pred_win = fwd.prop(old.board,agent$weights,agent$f)
-        bprop = bk.prop(old.board,as.matrix(reward),agent$weights$w2,pred_win,agent$df)
-        win_val = pred_win$a2[1][1]
-        loss_val = fwd.prop(flip.board(old.board),agent$weights,agent$f)$a2[1][1]
-        actual = win_val
+    b_board = flip.board(board)
+    if (game.over(board)!=0 | game.over(b_board)!=0){ # GAME IS OVER
+      if (player == "white") {
+        y = 1
       } else {
-        # Game is over and black has won (i.e. white lost.)
-        # Since it is black's turn, the board is currently from black's perspective. 
-        # To backprop 0, we need to flip the board first to make it white's perspective.
-        reward = 0
-        pred_loss = fwd.prop(flip.board(old.board),agent$weights,agent$f)
-        bprop = bk.prop(flip.board(old.board),as.matrix(reward),agent$weights$w2,pred_loss,agent$df)
-        # compute a2 values for both people's current board view
-        loss_val = pred_loss$a2[1][1]
-        win_val = fwd.prop(old.board,agent$weights,agent$f)$a2[1][1]
-        reward = 1
-        actual = win_val
+        y = 0
       }
     } else { # IF THE GAME IS NOT OVER
-      
-      if (p ==  "white"){
-        # Backprop, using current evaluation as desired output,
-        # and the board position previous to the current move as the input.
-        # the board is from white's perspective, so we don't need to flip it.
-        reward = fwd.prop(board,agent$weights,agent$f)$a2
-        output = fwd.prop(old.board,agent$weights,agent$f)
-        actual = output$a2[1][1]
-        bprop = bk.prop(old.board,reward,agent$weights$w2,output,agent$df)
-        reward = reward[1][1]
-      } else {
-        reward = fwd.prop(board,agent$weights,agent$f)$a2
-        output = fwd.prop(old.board,agent$weights,agent$f)
-        actual = output$a2[1][1]
-        bprop = bk.prop(old.board,reward,agent$weights$w2,output,agent$df)
-        reward = reward[1][1]
-      }
+      y = fwd.prop(board,agent$weights,agent$f)$a2[1][1]
     }
+  
+    fprop = fwd.prop(old.board,agent$weights,agent$f)
+    bprop = bk.prop(old.board,as.matrix(y),agent$weights$w2,fprop,agent$df)
+    y_hat = fprop$a2[1][1]
     
-    error = abs(reward - actual)
+    error = abs(y - y_hat)
+    
     # Update all gradient
     agent$ets$b1 = LAMBDA*agent$ets$b1 + bprop$db1
     agent$weights$b1 = agent$weights$b1 - ALPHA*agent$ets$b1*error
@@ -130,38 +89,26 @@ train.game=function(agent,ALPHA,LAMBDA,verbose){
     agent$ets$w2 = LAMBDA*agent$ets$w2 + bprop$dw2
     agent$weights$w2 = agent$weights$w2 - ALPHA*agent$ets$w2*error
     
-    cost = cost + cost.squared.error(old.board,reward,agent$weights,agent$f,g=sigmoid)
-    
-    if (p == "white"){
-      p1_hist[[turns]] = actual
-    } else {
-      p2_hist[[turns]] = actual
-    }
+    # update history things
+    cost = cost + cost.squared.error(old.board,y_hat,agent$weights,agent$f,g=sigmoid)
+    game_hist[[turns]] = y
   }
+  winner = y
   list(agent=agent,
-       winner=p,
-       w=player,
        turns=turns,
-       p1_hist=p1_hist,
-       p2_hist=p2_hist,
+       game_hist=game_hist,
        cost=cost,
-       win_val=win_val,
-       loss_val=loss_val)
+       winner=winner)
 }
-
-
 
 nnet1.fit=function(agent,ALPHA,LAMBDA,max.games=500,EVAL,eval_freq){
   
+  start.time=Sys.time()
   cost_hist = list()
   weight_hist = list()
   eval_hist = list()
-  reward_hist = list()
-  win_val_hist = list()
-  loss_val_hist = list()
-  games_p1 = list()
-  games_p2 = list()
-  winner = list()
+  game_hist = list()
+  winner_hist = list()
   
   for (i in 1:max.games){
     
@@ -170,20 +117,19 @@ nnet1.fit=function(agent,ALPHA,LAMBDA,max.games=500,EVAL,eval_freq){
     agent = game$agent
     weight_hist[[i]] = agent$weights
     cost_hist[[i]] = game$cost
-    win_val_hist[[i]] = game$win_val
-    loss_val_hist[[i]] = game$loss_val
-    games_p1[[i]] = game$p1_hist
-    games_p2[[i]] = game$p2_hist
-    winner[[i]] = game$winner
+    game_hist[[i]] = game$game_hist
+    winner_hist[[i]] = game$winner
     
     if(EVAL && (i%%eval_freq==0)){
-      print(i)
-      check = evaluate(agent,make_random_agent(),250)$p1
-      print(paste(i/eval_freq,check))
+      #print(i)
+      check = evaluate(agent,make_random_agent(),500)$p1
+      #print(paste(i/eval_freq,check))
       eval_hist[[(i/eval_freq)[1]]] = check
     }
   }
-  return(list(agent=agent,weight_hist=weight_hist,cost=cost_hist,eval=eval_hist,reward_hist=reward_hist,wv_hist=win_val_hist,lv_hist=loss_val_hist,games_p1=games_p1,games_p2=games_p2,winner=winner))
+  end.time=Sys.time()
+  total.time = end.time - start.time
+  return(list(agent=agent,cost=cost_hist,game_hist=game_hist,winner_hist=winner_hist,eval_hist=eval_hist,time=total.time))
 }
 
 
