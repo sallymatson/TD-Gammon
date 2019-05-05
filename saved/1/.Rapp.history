@@ -1,0 +1,2 @@
+load("/Users/matsons/Desktop/Junior-Spring/MATH-514/td-gammon/saved/1/trained_agent_300000_sigmoid_basic.rds")
+load("/Users/matsons/Desktop/Junior-Spring/MATH-514/td-gammon/saved/1/trained_agent_50000_sigmoid_basic.rds")

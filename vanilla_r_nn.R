@@ -121,9 +121,9 @@ nnet1.fit=function(agent,ALPHA,LAMBDA,max.games=500,EVAL,eval_freq){
     winner_hist[[i]] = game$winner
     
     if(EVAL && (i%%eval_freq==0)){
-      #print(i)
+      print(i)
       check = evaluate(agent,make_random_agent(),500)$p1
-      #print(paste(i/eval_freq,check))
+      print(paste(i/eval_freq,check))
       eval_hist[[(i/eval_freq)[1]]] = check
     }
   }
