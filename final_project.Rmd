@@ -64,12 +64,12 @@ print.fun('bk.prop')
 
 # Training & Tuning
 
-All of our networks are three layers (one hidden layer). We tuned using the following parameters.
+All of our networks are three layers (one hidden layer). We tuned using the following parameters:
 
 +---------------+---------------+---------+----------+---------------------+---------------------+
 | Agent Number  | Activation    | $\alpha$| $\lambda$| Hidden Layer Units  | Max epochs          |
 +===============+===============+=========+==========+=====================+=====================+
-| 1             | Sigmoid       | 0.1     | 0.8      | 40                  | 200,000             |
+| 1             | Sigmoid       | 0.1     | 0.8      | 40                  | 300,000             |
 +---------------+---------------+---------+----------+---------------------+---------------------+
 | 2             | Relu          | 0.1     | 0.8      | 40                  | 200,000             |
 +---------------+---------------+---------+----------+---------------------+---------------------+
@@ -93,9 +93,6 @@ All of our networks are three layers (one hidden layer). We tuned using the foll
 +---------------+---------------+---------+----------+---------------------+---------------------+
 
 
-
-Training with sigmoid activations for all layers, $\alpha=0.1$, and $\lambda=0.8$.
-
 ```{r load 1, echo=FALSE, cache=TRUE}
 trained_agent.50000.1 = readRDS(file = "saved/1/trained_agent_50000_sigmoid_basic.rds")
 trained_agent.100000.1 = readRDS(file="saved/1/trained_agent_100000_sigmoid_basic.rds")
@@ -105,19 +102,50 @@ trained_agent.300000.1 = readRDS(file="saved/1/trained_agent_300000_sigmoid_basi
 ```
 
 ```{r load 2, echo=FALSE, cache=TRUE}
-
+trained_agent.50000.2 = readRDS(file="saved/2/trained_agent_50000_relu_basic_NEW.rds")
+trained_agent.200000.2 = readRDS(file="saved/2/trained_agent_200000_relu_basic_NEW.rds")
 ```
 
+```{r load 3, echo=FALSE, cache=TRUE}
+trained_agent.10000.3 = readRDS(file="saved/3/trained_agent_10000_relu_largeLR.rds")
+trained_agent.50000.3 = readRDS(file="saved/3/trained_agent_50000_relu_largeLR.rds")
+```
 
-```{r relu basic, echo=FALSE, cache=TRUE}
-trained_agent.10000.2 = readRDS(file="saved/2/trained_agent_10000_relu_basic.rds")
-trained_agent.50000.2 = readRDS(file="saved/2/trained_agent_50000_relu_basic.rds")
-trained_agent.100000.2 = readRDS(file="saved/2/trained_agent_100000_relu_basic.rds")
-trained_agent.150000.2 = readRDS(file="saved/2/trained_agent_150000_relu_basic.rds")
-trained_agent.200000.2 = readRDS(file="saved/2/trained_agent_200000_relu_basic.rds")
+```{r load 4, echo=FALSE, cache=TRUE}
+trained_agent.50000.4 = readRDS(file="saved/4/trained_agent_50000_relu_lowLAMBDA.rds")
+```
+
+```{r load 5, echo=FALSE, cache=TRUE}
+trained_agent.50000.5 = readRDS(file="saved/5/trained_agent_sigmoid_big_hidden_layer.rds")
+```
+
+```{r load 6, echo=FALSE, cache=TRUE}
+trained_agent.50000.6 = readRDS(file="saved/6/trained_agent_sigmoid_0_lambda.rds")
+```
+
+```{r load 7, echo=FALSE, cache=TRUE}
+trained_agent.50000.7 = readRDS(file="saved/7/trained_agent_sigmoid_1_lambda.rds")
+```
+
+```{r load 8, echo=FALSE, cache=TRUE}
+trained_agent.50000.8 = readRDS(file="saved/8/trained_agent_sigmoid_5_lambda.rds")
+```
+
+```{r load 9, echo=FALSE, cache=TRUE}
+trained_agent.50000.9 = readRDS(file="trained_agent_sigmoid_low_alpha.rds")
+```
+
+```{r load 10, echo=FALSE, cache=TRUE}
+trained_agent.50000.10 = readRDS(file="trained_agent_relu_low_alpha.rds")
+```
+
+```{r load 11, echo=FALSE, cache=TRUE}
+trained_agent_200000.11 = readRDS(file="trained_agent_relu_200000_basic_SMOL_at_end.rds")
 ```
 
 ```{r agent1 graphs, echo=FALSE, cache=TRUE}
+'''
+
 cost_hist_sig = c(trained_agent.50000.1$cost, trained_agent.100000.1$cost, trained_agent.150000.1$cost, trained_agent.200000.1$cost)
 cost_hist_relu = c(trained_agent.10000.2$cost, trained_agent.50000.2$cost, trained_agent.100000.2$cost, trained_agent.150000.2$cost, trained_agent.200000.2$cost)
 
@@ -138,6 +166,7 @@ abline(lm(unlist(eval_hist_relu) ~ seq(1,length(eval_hist_relu))), col="blue")
 title("Evaluation during training against random opponent")
 
 print(trained_agent.50000.1$time + trained_agent.100000.1$time + trained_agent.150000.1$time + trained_agent.200000.1$time)
+'''
 ```
 
 Player 1 (Relu activation, 200,000 epochs, $\alpha=0.1$ and $\lambda=0.8$) playing Player 2 (Sigmoid activation, 50,000 epochs, $\alpha=0.1$ and $\lambda=0.8$) for 500 games.
