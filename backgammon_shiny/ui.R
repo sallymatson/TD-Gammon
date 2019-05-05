@@ -38,7 +38,7 @@ shinyUI(fluidPage(
  actionButton('newGame','New Game'),
  actionButton('turn','Next player\'s turn'),
  actionButton('Rturn','Random turn'),
- actionButton('AIturn','AI\'s turn'),
+ actionButton('AIturn','AI A\'s turn'),
  actionButton('AIBturn','AI B\'s turn'),
 
     fluidRow( br(),

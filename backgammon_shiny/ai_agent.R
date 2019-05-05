@@ -101,8 +101,6 @@ win_prob <- function(boardF, player){
   
   # get features
   feat = array(findFeat(boardF, player),dim = c(294,1))
-  # feat = array(feat, dim = c(294,1))
-  #w = readBin('weights0.bin', what="double")
   w1 = as.matrix(w1.in)  # 50 by 294
   b1 = as.matrix(b1.in)  # 1  by 50
   
@@ -117,7 +115,6 @@ win_prob <- function(boardF, player){
   
   # returns prob of winning given board configuration
   return(sigmoid(h))
-  
 }
 
 # given board configuration and roll find best move

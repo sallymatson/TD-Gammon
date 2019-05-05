@@ -1,0 +1,52 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## AI Agent
+
+
+The AI move functions
+```{r, echo=FALSE}
+
+```
+
+## The GUI
+
+Implementing the TD Gammon algorithm to play against a human.
+
+- Use Shiny R package for interactive web apps
+- Make an interactive game board that follows the rules of Backgammon 
+
+Players
+
+- Human
+- Random Turn
+- AI Agent A & B
+
+For any given board configurations the AI Agent takes a set of pretrained weights and uses a feed forward functinon to determine which move out of it's set of possible moves gives it the highest probability of winning. 
+
+![](boardPic.png) 
+
+Key features of note in the GUI:
+
+- Restricts humans to the set of legal moves on a given turn.
+- Automatically sends pieces to bar.
+- Tracks the possible moves left for human.
+- Popup message notifies when game is over.
+- Popup message notifies when there are no possible moves for AI/Random
+
+## AI Agent A
+
+The agent is written using three different functions. 
+
+1. A function translates the board configuration into a feature vector
+2. A feedforward function takes the feature vector and already trained weights and 
+
+
+
+
