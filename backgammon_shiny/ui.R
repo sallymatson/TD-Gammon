@@ -39,7 +39,7 @@ shinyUI(fluidPage(
  actionButton('turn','Next player\'s turn'),
  actionButton('Rturn','Random turn'),
  actionButton('AIturn','AI\'s turn'),
- 
+ actionButton('AIBturn','AI B\'s turn'),
 
     fluidRow( br(),
         column(width = 8,

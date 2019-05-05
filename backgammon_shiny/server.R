@@ -24,6 +24,7 @@ value <<- -200
 valueTurn <<- -200
 valueAIturn <<- -200
 valueRturn <<- -200
+valueAIB <<- -200
 inactive <<- FALSE
 pick <<- 0
 roll <<- roll.dice()
@@ -98,6 +99,38 @@ shinyServer(function(input, output) {
                         "No possible moves!",easyClose = TRUE
                     ))
                 }
+        }
+        
+    })
+    
+    # AI B's turn
+    observeEvent(input$AIBturn, {
+        if (input$AIBturn != valueAIB){
+            playerB <<- !playerB
+            move <<- TRUE
+            roll <<- roll.dice()
+            valueAIB <<- input$AIBturn
+            inactive <<- TRUE
+            roll.track <<- 0
+            # PLACE HOLDER
+            if(possible()){
+                print("MOVES POSSIBLE")
+                print(aiB_move(board, roll, playerB))
+                board <<- aiB_move(board, roll, playerB)
+                if(game.over(board) || game.over(flip.board(board))){
+                    showModal(modalDialog(
+                        title = "Important message",
+                        "Game over!",easyClose = TRUE
+                    ))
+                }
+            }
+            else{
+                print("NO POSSIBLE MOVES")
+                showModal(modalDialog(
+                    title = "Important message",
+                    "No possible moves!",easyClose = TRUE
+                ))
+            }
         }
         
     })

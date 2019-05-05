@@ -152,5 +152,7 @@ ai_move <- function(boardF, roll, player){
 }
 
 
-
+aiB_move <- function(board, roll, playerB) {
+  
+}
 
