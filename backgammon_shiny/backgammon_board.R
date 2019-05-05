@@ -18,6 +18,7 @@ roll.dice.cl=function(seed){
     sort(roll)
   }
 }
+roll.dice=roll.dice.cl()
 
 # white moves in negative direction - all moves will be from white perspective
 # executing flip.board will then reconfigure so black move looks the same as a white move
