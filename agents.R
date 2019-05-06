@@ -1,5 +1,3 @@
-source("nn-utils.R")
-
 ### ALL AGENTS must have a move function defined. This will be called in the play.game.
 ### each move function should take as arguments 1. current board state, and 2. roll; they should 
     # return the new board state
@@ -35,6 +33,7 @@ td.move.black=function(board,roll,vanilla_agent){
   moves=lapply(find.all.possible.moves(flip.board(board),roll),flip.board)
   min = 2
   if (length(moves) <= 0) {
+    print('heya')
     return(board)
   }
   new_move = moves[[1]]
@@ -46,16 +45,6 @@ td.move.black=function(board,roll,vanilla_agent){
     }
   }
   return(new_move)
-}
-
-make_human_agent=function(){
-  move=human.move
-  return(list(move=move,name="HumanAgent"))
-}
-
-
-human.move=function(){
-  # TODO 
 }
 
 make_random_agent=function(){
@@ -76,3 +65,25 @@ random.agent.move=function(board, roll, self){
   new.board=moves[[i]]
   return(new.board)
 }
+
+
+make_ai_opponent_agent=function(){
+  move=ai_move_2
+  return(list(move=move,name="Opponent!"))
+}
+ai_move_2=function(board,roll,self){
+  moves=unique(find.all.possible.moves(board,roll))
+  max = -1
+  if (length(moves) <= 0) {
+    return(board)
+  }
+  new_move = moves[[1]]
+  for (i in 1:length(moves)){
+    curr = win_prob(moves[[i]],FALSE)
+    if (curr > max){
+      new_move = moves[[i]]
+      max = curr
+    }
+  }
+  return(new_move)
+  }
