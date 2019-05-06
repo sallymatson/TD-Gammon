@@ -47,6 +47,7 @@ Here, we present some of the resources we used in the research section with brie
 
 * [Helpful medium article with link to tensorflow explination](https://medium.com/jim-fleming/before-alphago-there-was-td-gammon-13deff866197)
     + Outperforms random opponent after 1000 moves ("about an hour of training").
+    + Code available to view on GitHub.
 
 # Neural Network Structure
 
@@ -172,6 +173,9 @@ trained_agent_200000.11 = readRDS(file="saved/11/trained_agent_relu_200000_basic
 trained_agent_50000.12 = readRDS(file="saved/12/trained_agent_match_baseline.rds")
 ```
 
+Below are the cost histories and evaluation histories for each. For the cost history, we calculated cost per game and smoothed the results slightly. For the evaluation history, every 2000 epochs (games) during training we evaluated the current agent against a random agent for 250 games and calculated the percentage won. 
+
+Every graph is to scale with the other graphs for ease of comprehension. To see the specific parameters used in one of the agents below, please refer to the table.
 ```{r agent1 graphs, echo=FALSE, cache=TRUE}
 
 costs = list(c(trained_agent.50000.1$cost, trained_agent.100000.1$cost, trained_agent.150000.1$cost, trained_agent.200000.1$cost),
@@ -340,8 +344,14 @@ We have published the GUI online using the free R Shiny App Server: https://fion
 ### Our Contributions and Novel Approaches
 Our program was the first we saw that used Relu for activations. The original algorithm used sigmoid activations only, and so most other implementations do as well. It was interesting to experiment with Relu. We also found our implementation relatively efficient. In one refernce online, it said that 1000 epochs would take about an hour. In our training, we found 1000 epochs to take only about 30 seconds. The dense feature vector representation could have led to this fast nature, as well as the barebones code and vectorization.
 
-### Results
-We are extremely satisfied with the results. They show that training was successful, and we were able to experiment with different parameters. The best agents seem to be numbers 4, 5, 6, 8, and 10. 
+### Results & Conclusion
+We are extremely satisfied with the results. Our AI Agent was much more time-efficient than the Baseline Agnet, and also solidly outperformed it. Our best agents from these rounds of testing seem to be numbers 4, 5, 6, 8, and 10. This is interesting because these agents have a variety of parameters. They include both Relu and Sigmoid activations, low and high lambda values, as well as variable alpha values. To get a very strong idea of what makes for the best possible algorithm, we would absolutely need to do more training and testing. We would need to evaluate the agents against eachother with different numbers of epochs (we didn't really tune this parameter), but these were all limited due to time. 
+
+it is also interesting to look at the agents that performed relatively poorly. Agnet 7, the agent with a lambda of 1, was one of the worst performers. This makes sense, because it means that the eligibility traces stored the gradient calculations from each update equally, which intuitiviley shouldn't work well because moves that happened 20 move ago should likely be less important to the current state than the previous few. 
+
+Agent 3 (the relu genttrained with alpha of 0.3) never really increased its evaluation ability. This likely shows that the learning rate was too high, and this makes sense as to why it was one of the worse performers. 
+
+In conclusion, we found this project both hard and enjoyable. Understanding the new concepts such as reinforcement learning and the use of eligibility traces is a very valuable lesson. Not only did we successfully implement a difficult algorithm and have time to train and tune it using multiple parameters, but we also made a very high quality deliverable with our Shiny app. This allows our result to be not only interesting, but also useful and productive. 
 
 ### Further Work
 To continue this project, we would like to implement it using TensorFlow. This would make it easier to train using techniques such as momentum, early stopping, dropout, etc. We would also like to increase the size of the network to add multiple layers. These ideas, as well as using other novel neural network tuning techniques, would be very interesting. It would also be interesting to use 2-ply or 3-ply look ahead.
