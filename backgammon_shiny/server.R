@@ -115,7 +115,7 @@ shinyServer(function(input, output) {
             # PLACE HOLDER
             if(possible()){
                 print("MOVES POSSIBLE")
-                print(aiB_move(board, roll, playerB))
+                #print(aiB_move(board, roll, playerB))
                 board <<- aiB_move(board, roll, playerB)
                 if(game.over(board) || game.over(flip.board(board))){
                     showModal(modalDialog(

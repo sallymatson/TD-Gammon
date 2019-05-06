@@ -83,7 +83,7 @@ win_prob <- function(boardF, player){
 
 # given board configuration and roll find best move
 
-ai_move <- function(boardF, roll, playerB){
+ai_move <- function(boardF, roll, player){
 
   if (player){
     moves=find.all.possible.moves(flip.board(boardF),roll)
@@ -116,7 +116,7 @@ ai_move <- function(boardF, roll, playerB){
 }
 
 
-agent = readRDS('trained_agent_sigmoid_5_lambda.rds')
+agent = readRDS('trained_agent_sigmoid_5_lambda.rds')$agent
 
 fwd.prop=function(board,weights,f,g=sigmoid){
   # forward propegates current game state and returns 
@@ -131,7 +131,7 @@ fwd.prop=function(board,weights,f,g=sigmoid){
 
 aiB_move <- function(board, roll, playerB) {
   if(playerB){
-    return(agent$td.move.black(board,roll,agent))
+    return(agent$black.move(board,roll,agent))
   } else {
     return(agent$move(board,roll,agent))
   }
