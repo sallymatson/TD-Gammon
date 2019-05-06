@@ -1,4 +1,3 @@
-
 init.wgts=function(n.in,n.hid,n.out){
   b1 = runif(n.hid,-.1,.1)
   w1 = matrix(rnorm(n.in*n.hid,0,.1),nrow=n.hid,ncol=n.in)

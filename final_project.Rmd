@@ -8,58 +8,82 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 source("vanilla_r_nn.R")
-source("agents.R")
 source("nn-utils.R")
+setwd("./backgammon_shiny")
+source("ai_agent.R")
+setwd("../")
+source("agents.R")
 source("backgammon_board.R")
 source("eval.R")
 library(zeallot)
+library(gtools)
+library(ggplot2)
+library(reshape2)
 ```
 
 # Introduction
-Our goal in this project was to implement a version of Tesuro's TD-Gammon, and tune the algorithm to see how well it could perform. TD-Gammon is a Neural Network that uses reinforcement learning to play the game backgammon. 
+Our goal in this project was to implement a version of Tesuro's TD-Gammon, and tune the algorithm to see how well it could perform. To facilitate this, we also built a Graphical User Interface in order to play against our trained AI.
+
+Please feel free to visit our [GitHub Repository](https://github.com/sallymatson/TD-Gammon) to see the code.
+
+### Background Research on TD-Gammon
+TD-Gammon is a Neural Network that uses reinforcement learning to play the game backgammon. 
 
 Backgammon is an interesting game for Artificial Intelligence. Trying to take into account all possible board configurations and all possible future dice rolls is way too computationally intensive.... the game has effective branching factor of about 400, which makes search methods like those used in chess and checkers are impossible.
 
+Here, we present some of the resources we used in the research section with brief notes on what the authors did (as well as details relevant or specifically notable for our purposes.) 
 
-### Background Research on TD-Gammon
-
-* [Tesauro's Original Paper](http://modelai.gettysburg.edu/2013/tdgammon/pa4.pdf)
+* [Tesauro's Original Paper](https://cling.csd.uwo.ca/cs346a/extra/tdgammon.pdf)
+    + This paper first presented the TD-Gammon algorithm. In it, Tesauro outlines the weight update algorithm.
+    + 40 hidden units, 200,000 games, played at expert level.
 
 * [Stanford Paper comparing Td-gammon to a Baysean approach](http://cs229.stanford.edu/proj2013/MolinFlyhammarBidgol-UsingMachineLearningToTeachAComputerToPlayBackgammon.pdf)
+    + Use a feature vector of length 26.
+    + Updates weights after every full game played.
 
 * [Cornell Article with good pseudocode](https://www.cs.cornell.edu/boom/2001sp/Tsinteris/gammon.htm)
+    + Use feature vector of length 198.
+    + Use 50 hidden units.
 
 * [Helpful medium article with link to tensorflow explination](https://medium.com/jim-fleming/before-alphago-there-was-td-gammon-13deff866197)
+    + Outperforms random opponent after 1000 moves ("about an hour of training").
 
-* [Class assignment with some Java pseudocode](http://modelai.gettysburg.edu/2013/tdgammon/pa4.pdf)
+# Neural Network Structure
 
-
-### Neural Network Structure
-
-#### Cost Function 
+#### Cost Function
+The model is based on a Squared Error cost function. During training, the cost is calculated between the network's output for the current state and the network's output for the next state. At the end of the game, that "next state" value is 1 (if white won) or 0 (if black won.)
+```{r}
+print.fun('cost.squared.error')
+```
 
 #### Features
+Most TD-Gammon implementations use a sparse representation of the Backgammon Board, of length ~200. In our implementation, the feature vector is of length 28. The first 24 represent points 1 through 24 on the backgammon board (conventional numbering,) and the last four represent the "bar" and the pieces that are off the board.
 
 #### Forward Propegation
+We use a standard forward propegation algorithm that can accept variable network sizes and activation functions.
 ```{r fwprop, echo=FALSE}
 print.fun('fwd.prop')
 ```
 
 #### Back Propegation
+Our backpropegaton algorithm calcuates the gradients for our three-layer neural network using the results from forward propegation.
 ```{r bkprop, echo=FALSE}
 print.fun('bk.prop')
 ```
 
-#### Training
-```{r bkprop, echo=FALSE}
-print.fun('bk.prop')
+#### Game Play & Weight Updates
+Our algorithm updates the weights after every individual turn. The agent plays against itself using the same function as White and Black; for white turns, the agent choses the move to maximize the network function, and for black turns it minimizes it. Then, it calculates the error and derivatives, and uses eligibility traces to update the network weights.
+
+The weight updates themselves are the most critical part of the algorithm. We used Eligibility Traces to store the effect of past moves on the current state. The equation for the eligibility trace are: $e_t = 0 *e_{t-1} + \frac{\delta C_t}{\delta \theta_t} = \frac{\delta C_t}{\delta \theta_t}$.
+
+The error function is as follows: $\text{Error}=V_t(s_{t+1})-V_t(s_t)$  where $V_{i}$ = 0,1 if $i$ is the final move, and $V$ is the value of the network output.
+  
+Combining these, for every weight in the network, we use the following equation: $\theta_{t+1} = \theta_{t} + \alpha * \text{error} * e_t$.
+
+Combining all of this, one game of training goes as follows:
+```{r echo=FALSE}
+print.fun('train.game')
 ```
-### Agent Structure
-
-#### Random Agent
-
-#### AI Agent
-
 
 
 # Training & Tuning
@@ -69,7 +93,7 @@ All of our networks are three layers (one hidden layer). We tuned using the foll
 +---------------+---------------+---------+----------+---------------------+---------------------+
 | Agent Number  | Activation    | $\alpha$| $\lambda$| Hidden Layer Units  | Max epochs          |
 +===============+===============+=========+==========+=====================+=====================+
-| 1             | Sigmoid       | 0.1     | 0.8      | 40                  | 300,000             |
+| 1             | Sigmoid       | 0.1     | 0.8      | 40                  | 200,000             |
 +---------------+---------------+---------+----------+---------------------+---------------------+
 | 2             | Relu          | 0.1     | 0.8      | 40                  | 200,000             |
 +---------------+---------------+---------+----------+---------------------+---------------------+
@@ -91,19 +115,20 @@ All of our networks are three layers (one hidden layer). We tuned using the foll
 +---------------+---------------+---------+----------+---------------------+---------------------+
 | 11            | Relu          | 0.1/0.01| 0.8      | 40                  | 200,000             |
 +---------------+---------------+---------+----------+---------------------+---------------------+
-
+| 12            | Sigmoid       | 0.1     | 0.7      | 40                  | 50,000              |
++---------------+---------------+---------+----------+---------------------+---------------------+
 
 ```{r load 1, echo=FALSE, cache=TRUE}
 trained_agent.50000.1 = readRDS(file = "saved/1/trained_agent_50000_sigmoid_basic.rds")
 trained_agent.100000.1 = readRDS(file="saved/1/trained_agent_100000_sigmoid_basic.rds")
 trained_agent.150000.1 = readRDS(file="saved/1/trained_agent_150000_sigmoid_basic.rds")
 trained_agent.200000.1 = readRDS(file="saved/1/trained_agent_200000_sigmoid_basic.rds")
-trained_agent.300000.1 = readRDS(file="saved/1/trained_agent_300000_sigmoid_basic.rds")
+#trained_agent.300000.1 = readRDS(file="saved/1/trained_agent_300000_sigmoid_basic.rds")
 ```
 
 ```{r load 2, echo=FALSE, cache=TRUE}
-trained_agent.50000.2 = readRDS(file="saved/2/trained_agent_50000_relu_basic_NEW.rds")
-trained_agent.200000.2 = readRDS(file="saved/2/trained_agent_200000_relu_basic_NEW.rds")
+trained_agent.50000.2 = readRDS(file="saved/2/trained_agent_relu_50000_basic_NEW.rds")
+trained_agent.200000.2 = readRDS(file="saved/2/trained_agent_relu_200000_basic_NEW.rds")
 ```
 
 ```{r load 3, echo=FALSE, cache=TRUE}
@@ -132,47 +157,194 @@ trained_agent.50000.8 = readRDS(file="saved/8/trained_agent_sigmoid_5_lambda.rds
 ```
 
 ```{r load 9, echo=FALSE, cache=TRUE}
-trained_agent.50000.9 = readRDS(file="trained_agent_sigmoid_low_alpha.rds")
+trained_agent.50000.9 = readRDS(file="saved/9/trained_agent_sigmoid_low_alpha.rds")
 ```
 
 ```{r load 10, echo=FALSE, cache=TRUE}
-trained_agent.50000.10 = readRDS(file="trained_agent_relu_low_alpha.rds")
+trained_agent.50000.10 = readRDS(file="saved/10/trained_agent_relu_low_alpha.rds")
 ```
 
 ```{r load 11, echo=FALSE, cache=TRUE}
-trained_agent_200000.11 = readRDS(file="trained_agent_relu_200000_basic_SMOL_at_end.rds")
+trained_agent_200000.11 = readRDS(file="saved/11/trained_agent_relu_200000_basic_SMOL_at_end.rds")
+```
+
+```{r load 12, echo=FALSE, cache=TRUE}
+trained_agent_50000.12 = readRDS(file="saved/12/trained_agent_match_baseline.rds")
 ```
 
 ```{r agent1 graphs, echo=FALSE, cache=TRUE}
-'''
 
-cost_hist_sig = c(trained_agent.50000.1$cost, trained_agent.100000.1$cost, trained_agent.150000.1$cost, trained_agent.200000.1$cost)
-cost_hist_relu = c(trained_agent.10000.2$cost, trained_agent.50000.2$cost, trained_agent.100000.2$cost, trained_agent.150000.2$cost, trained_agent.200000.2$cost)
+costs = list(c(trained_agent.50000.1$cost, trained_agent.100000.1$cost, trained_agent.150000.1$cost, trained_agent.200000.1$cost),
+             c(trained_agent.50000.2$cost, trained_agent.200000.2$cost),
+             c(trained_agent.10000.3$cost, trained_agent.50000.3$cost),
+             trained_agent.50000.4$cost,
+             trained_agent.50000.5$cost,
+             trained_agent.50000.6$cost,
+             trained_agent.50000.7$cost,
+             trained_agent.50000.8$cost,
+             trained_agent.50000.9$cost,
+             trained_agent.50000.10$cost,
+             trained_agent_200000.11$cost,
+             trained_agent_50000.12$cost)
+evals = list(c(trained_agent.50000.1$eval_hist, trained_agent.100000.1$eval_hist, trained_agent.150000.1$eval_hist, trained_agent.200000.1$eval_hist),
+             c(trained_agent.50000.2$eval_hist, trained_agent.200000.2$eval_hist),
+             c(trained_agent.10000.3$eval_hist, trained_agent.50000.3$eval_hist),
+             trained_agent.50000.4$eval_hist,
+             trained_agent.50000.5$eval_hist,
+             trained_agent.50000.6$eval_hist,
+             trained_agent.50000.7$eval_hist,
+             trained_agent.50000.8$eval_hist,
+             trained_agent.50000.9$eval_hist,
+             trained_agent.50000.10$eval_hist,
+             trained_agent_200000.11$eval_hist,
+             trained_agent_50000.12$eval_hist)
 
-plot(0,0,xlim=c(0,length(cost_hist_sig)),ylim=c(0,0.01), type="n", ylab="", xlab="Epochs")
-lines(lowess(seq(1,length(cost_hist_sig)),cost_hist_sig,1/1000000),col="red")
-lines(lowess(seq(1,length(cost_hist_relu)),cost_hist_relu,1/1000000),col="blue")
-title("(Smoothed) cost history")
-
-
-eval_hist_sig = c(trained_agent.50000.1$eval_hist, trained_agent.100000.1$eval_hist, trained_agent.150000.1$eval_hist, trained_agent.200000.1$eval_hist)
-eval_hist_relu = c(trained_agent.10000.2$eval_hist, trained_agent.50000.2$eval_hist, trained_agent.100000.2$eval_hist, trained_agent.150000.2$eval_hist, trained_agent.200000.2$eval_hist)
-
-plot(0,0,xlim=c(0,length(eval_hist_sig)),ylim=c(0,1), type="n", ylab="", xlab="Epochs")
-points(x=seq(1,length(eval_hist_sig)), y=eval_hist_sig, col="red")
-points(x=seq(1,length(eval_hist_relu)), y=eval_hist_relu, col="blue")
-abline(lm(unlist(eval_hist_sig) ~ seq(1,length(eval_hist_sig))), col="red")
-abline(lm(unlist(eval_hist_relu) ~ seq(1,length(eval_hist_relu))), col="blue")
-title("Evaluation during training against random opponent")
-
-print(trained_agent.50000.1$time + trained_agent.100000.1$time + trained_agent.150000.1$time + trained_agent.200000.1$time)
-'''
+for (AgentNumber in 1:12){
+  print(paste("Agent training for Agent Number",AgentNumber,":"))
+  cost_hist = costs[[AgentNumber]]
+  eval_hist = evals[[AgentNumber]]
+  par(mfrow=c(1,2))
+  plot(0,0,xlim=c(0,length(cost_hist)),ylim=c(0,0.01), type="n", ylab="", xlab="Epochs")
+  lines(lowess(seq(1,length(cost_hist)),cost_hist,1/1000000),col="red")
+  title("(Smoothed) cost history")
+  
+  plot(0,0,xlim=c(0,length(eval_hist)),ylim=c(0,1), type="n", ylab="", xlab="Epochs (x 2000)")
+  points(x=seq(1,length(eval_hist)), y=eval_hist, col="red")
+  abline(lm(unlist(eval_hist) ~ seq(1,length(eval_hist))), col="red")
+  title("Evaluation during training\n against random opponent")
+  
+}
 ```
 
-Player 1 (Relu activation, 200,000 epochs, $\alpha=0.1$ and $\lambda=0.8$) playing Player 2 (Sigmoid activation, 50,000 epochs, $\alpha=0.1$ and $\lambda=0.8$) for 500 games.
-```{r playing against eachother, cache=TRUE}
-evaluate(trained_agent.200000.2$agent,trained_agent.200000.1$agent,500)$p1
+### Evaluation
+#### Performance against a Random Agent
+In the following table, our Agents trained with their max epochs (numbered based on the table above) play a random opponent 10 times. Each entry represents the percentage of games that the AI Agent won.
+```{r random_results, echo=FALSE, cache=TRUE}
+random_results = matrix(rep(0,12),ncol=1)
+agents = list(trained_agent.200000.1$agent,trained_agent.200000.2$agent,trained_agent.50000.3$agent,trained_agent.50000.4$agent,trained_agent.50000.5$agent,trained_agent.50000.6$agent,trained_agent.50000.7$agent,trained_agent.50000.8$agent,trained_agent.50000.9$agent,trained_agent.50000.10$agent,trained_agent_200000.11$agent,trained_agent_50000.12$agent)
+random_agent = make_random_agent()
+for (a1 in 1:12){
+  random_results[a1,][1] = evaluate(agents[[a1]],random_agent,100)$p1
+}
 ```
+
+```{r}
+print(random_results)
+```
+
+
+#### Performance against  eachother
+In the following table, our AIs trained with 50,000 epochs (numbered based on the table above) play eachother 100 times. Each row represents the percentage of games the Agent in the ROW won (*i.e. table[i][j] = n represents the percentage that Agent i won.*)
+```{r training_curves, echo=FALSE, cache=TRUE}
+eval_results = matrix(rep(0.0, 100),nrow=10,ncol=10)
+agents = list(trained_agent.50000.1$agent,trained_agent.50000.2$agent,trained_agent.50000.3$agent,trained_agent.50000.4$agent,trained_agent.50000.5$agent,trained_agent.50000.6$agent,trained_agent.50000.7$agent,trained_agent.50000.8$agent,trained_agent.50000.9$agent,trained_agent.50000.10$agent)
+
+for (a1 in 1:10){
+  for (a2 in 1:10){
+    agent_p1 = agents[[a1]]
+    agent_p2 = agents[[a2]]
+    result = evaluate(agent_p1, agent_p2, 100)$p1
+    eval_results[a1,][a2] = result
+  }
+}
+```
+
+
+```{r graph, cache=TRUE, echo=FALSE}
+res = melt(eval_results)
+ggplot(res, aes((Var2), (Var1), fill = value, label=value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0.5, limit = c(0,1), space = "Lab",name="% Wins for\nPlayer in Row") +
+  theme_minimal()+ # minimal theme
+  scale_y_continuous(breaks=seq(1,10,1))+
+  scale_x_continuous(breaks=seq(1,10,1))+
+  geom_text(color = "black", size = 4)+
+  theme(
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.border = element_blank(),
+  panel.background = element_blank(),
+  axis.ticks = element_blank())
+```
+
+To summarize, here are the average win percentages for each agent:
+```{r chcho=FALSE}
+as.matrix(rowMeans(eval_results),ncol=1)
+```
+
+#### Baseline Agent
+
+This is our baseline agent using weights trained from code https://github.com/awni/backgammon. We used 50000 games to train with a gamma of 0.7 and alpha of 0.1. The neural network has an input layer of 294 nodes and a single hidden layer of 50 nodes. It uses a sigmoid activation function. 
+
+We implement the agent by writing three different functions. (The code for these functions is in the ai_agent.R file.) The forward propegation and the algorithm to optimize this are very similar to our AI. However, we had to make a function to translate the 294 node board representation into the 28 length feature vector that works with our board.
+```{r}
+print.fun('findFeat')
+```
+
+
+#### Training Against Other TD Algorithm
+We trained the top performing algorithms against the baseline TD-Gammon algorithm. 
+```{r against opponent, cache=TRUE, echo=FALSE}
+other_ai = make_ai_opponent_agent()
+
+print("Performance of agent 4:")
+print(evaluate(trained_agent.50000.4$agent,other_ai,50)$p1)
+
+print("Performance of agent 5:")
+print(evaluate(trained_agent.50000.5$agent,other_ai,50)$p1)
+
+print("Performance of agent 6:")
+print(evaluate(trained_agent.50000.6$agent,other_ai,50)$p1)
+
+print("Performance of agent 8:")
+print(evaluate(trained_agent.50000.8$agent,other_ai,50)$p1)
+
+print("Performance of agent 10:")
+print(evaluate(trained_agent.50000.10$agent,other_ai,50)$p1)
+```
+
+
+### The GUI
+
+We implemented the TD Gammon algorithm to play against a human.
+
+- Use Shiny R package for interactive web apps
+- Make an interactive game board that follows the rules of Backgammon 
+
+Players
+
+- Human
+- Random Turn
+- AI Agent A & B
+
+For any given board configurations the AI Agent takes a set of pretrained weights and uses a feed forward functinon to determine which move out of it's set of possible moves gives it the highest probability of winning. 
+
+The random turn takes the current board configuration, dice roll, and player and returns a random legal move for that player. 
+
+![](boardPic.png) 
+
+##### Key features we implemented in the GUI:
+
+- Restricts humans to the set of legal moves on a given turn.
+- Automatically sends pieces to bar.
+- Tracks the possible moves left for human.
+- Popup message notifies when game is over.
+- Popup message notifies when there are no possible moves for AI/Random
+- Spacing of pieces on the board adjusts so that regardless of number of pieces on a given point they all fit. 
+
+We have published the GUI online using the free R Shiny App Server: https://fionapaine.shinyapps.io/backgammon_shiny/ 
+
+
+### Our Contributions and Novel Approaches
+Our program was the first we saw that used Relu for activations. The original algorithm used sigmoid activations only, and so most other implementations do as well. It was interesting to experiment with Relu. We also found our implementation relatively efficient. In one refernce online, it said that 1000 epochs would take about an hour. In our training, we found 1000 epochs to take only about 30 seconds. The dense feature vector representation could have led to this fast nature, as well as the barebones code and vectorization.
+
+### Results
+We are extremely satisfied with the results. They show that training was successful, and we were able to experiment with different parameters. The best agents seem to be numbers 4, 5, 6, 8, and 10. 
+
+### Further Work
+To continue this project, we would like to implement it using TensorFlow. This would make it easier to train using techniques such as momentum, early stopping, dropout, etc. We would also like to increase the size of the network to add multiple layers. These ideas, as well as using other novel neural network tuning techniques, would be very interesting. It would also be interesting to use 2-ply or 3-ply look ahead.
 
 
 
